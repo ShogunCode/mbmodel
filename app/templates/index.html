@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medulloblastoma Classification</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-12 flex">
+        
+<!-- Left vertical section -->
+<div class="w-1/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mr-4">
+    <h1 class="font-bold text-gray-800 mb-4">Medulloblastoma Classification Tool</h1>
+    
+    <!-- First radio button group - Modular for more options later in development -->
+    <div class="mb-4">
+        <label class="font-bold text-gray-600">DNA Methylation</label>
+        <div>
+            <input type="radio" id="option1A" name="firstOption" value="A" checked>
+            <label for="option1A" class="text-gray-600 ml-2">Microarray</label>
+        </div>
+    </div>
+
+    <!-- Second radio button group -->
+    <div class="mb-4">
+        <label class="font-bold text-gray-600">Cancer Type</label>
+        <div>
+            <input type="radio" id="option2A" name="secondOption" value="A" checked>
+            <label for="option2A" class="text-gray-600 ml-2">Medulloblastoma</label>
+        </div>
+    </div>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-violet-50 file:text-violet-700
+              hover:file:bg-violet-100">
+        <button type="button" id="uploadButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+            Upload
+        </button>
+        <p id="statusText"></p>
+    </form>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="bg-green-100 border-t border-b border-green-500 text-green-700 px-4 py-3" role="alert">
+            <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+      {% endif %}
+    {% endwith %}
+</div>
+
+        <!-- Right section for placeholders and information -->
+        <div class="w-3/4">
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Results Placeholders</h2>
+                <div class="space-y-4">
+                    <!-- Placeholders for results and other information here -->
+                    <!-- Placeholder for t-SNE -->
+                    <!-- Placeholder for Confidence Interval Graph -->
+                    <!-- Add more placeholders as needed -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/static/formValidation.js"></script>
+    <script src="/static/fileUploadHandler.js" defer></script>
+</body>
+</html>

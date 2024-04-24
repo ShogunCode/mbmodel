@@ -1,0 +1,6 @@
+matplotlib - DEBUG - matplotlib data path: C:\Users\Conal\AppData\Local\Programs\Python\Python311\Lib\site-packages\matplotlib\mpl-data
+matplotlib - DEBUG - CONFIGDIR=C:\Users\Conal\.matplotlib
+matplotlib - DEBUG - interactive is False
+matplotlib - DEBUG - platform is win32
+matplotlib - DEBUG - CACHEDIR=C:\Users\Conal\.matplotlib
+matplotlib.font_manager - DEBUG - Using fontManager instance from C:\Users\Conal\.matplotlib\fontlist-v330.json
