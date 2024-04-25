@@ -3,117 +3,84 @@ from matplotlib import cm
 import seaborn as sns
 import numpy as np
 from io import BytesIO
+import pandas as pd
 import base64
 from .model import make_predictions
 import logging
 
-def handle_confidence_plot(confidence_scores, H, cluster_labels):
-    # Generate plots
-    plot_path = generate_confidence_plot(H, cluster_labels, confidence_scores)  # Implement generate_plots
-    # Encode plot for web display
-    encoded_plot = encode_plot_for_web(plot_path)  # Implement encode_plot_for_web
-    return encoded_plot
+# def handle_confidence_plot(confidence_scores, H, cluster_labels):
+#     # Generate plots
+#     plot_path = generate_confidence_plot(H, cluster_labels, confidence_scores)  # Implement generate_plots
+#     # Encode plot for web display
+#     encoded_plot = encode_plot_for_web(plot_path)  # Implement encode_plot_for_web
+#     return encoded_plot
 
-def generate_confidence_plot(H, cluster_labels, confidence_scores):
-    plt.figure(figsize=(10, 6))
-    plt.scatter(H[:, 0], H[:, 1], c=cluster_labels, cmap='viridis', marker='o', label='Cluster Labels')
-    plt.colorbar()
-    plt.title("Prediction Clusters")
-    plt.xlabel("Feature 1")
-    plt.ylabel("Feature 2")
-    plt.legend()
+def compute_confidence_intervals(data):
+    if data.ndim > 1:
+        raise ValueError("Data must be 1-dimensional to compute confidence intervals")
+
+    mean_data = np.mean(data)
+    stats = [np.mean(np.random.choice(data, len(data), replace=True)) for _ in range(1000)]
+    lower = np.percentile(stats, 2.5)
+    upper = np.percentile(stats, 97.5)
+    return (mean_data, lower, upper)
+
+def analyze_data(data, labels, confidence_scores):
+    class_labels = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'NC']
+    colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'grey']
+
+    data_list, intervals, plotted_labels, positions, color_assignment = [], [], [], [], []
+    base_position = 1
+    tick_positions = []
+
+    # Assume data is 2D and we compute intervals for each feature
+    for feature_index in range(data.shape[1]):  # Loop through each feature
+        feature_data = data[:, feature_index]  # Extract data for the current feature
+        for i in range(6):
+            mask = (labels == i) & (confidence_scores[:, i] >= 0.73)
+            filtered_data = feature_data[mask]
+            
+            if filtered_data.size > 0:
+                interval = compute_confidence_intervals(filtered_data)
+                data_list.append(filtered_data.tolist())
+                intervals.append(interval)
+                plotted_labels.append(f"{class_labels[i]} Feature {feature_index+1}")
+                positions.append(base_position)
+                color_assignment.append(colors[i])
+                tick_positions.append(base_position)
+                base_position += 1
+
+    # Add your non-classifiable data handling here as needed
+
+    return plot_results(data_list, intervals, plotted_labels, positions, color_assignment, tick_positions, plotted_labels)
+
+def plot_results(data, intervals, labels, positions, color_assignment, tick_positions, plotted_labels):
+    """Plots the results of the analysis."""
+    plt.figure(figsize=(12, 8))
+    for pos, (mean, lower, upper), color in zip(positions, intervals, color_assignment):
+        plt.errorbar(pos, mean, yerr=[[mean - lower], [upper - mean]], fmt='o', color=color, label=labels[pos-1])
+
+    plt.xticks(tick_positions, plotted_labels)
+    plt.axhline(y=0.73, color='r', linestyle='--')
+    plt.title('Classifier Predictions with Probability Thresholds and Confidence Intervals')
+    plt.ylabel('Probability')
+    plt.ylim(0, 1)
     plt.grid(True)
-    plt_path = 'temp_plot.png'
+    plt.legend()
+    plt.show()
+
+    # Optionally save the plot to a file that can be displayed in a web app
+    plt_path = 'static/temp_plot.png'  # Adjust as needed for your app
     plt.savefig(plt_path)
     plt.close()
     return plt_path
-
-def generate_plots(W, H, labels, predictions):
-    sns.set_theme(style="whitegrid")
-
-    # Plotting the NMF Components
-    plt.figure(figsize=(12, 6))
-    for i, comp in enumerate(H):
-        plt.subplot(1, len(H), i + 1)
-        plt.bar(range(len(comp)), comp)
-        plt.title(f'Component {i+1}')
-    plt.tight_layout()
-    nmf_components_plot = save_plot_to_string()
-
-    # Plotting the Cluster Assignments
-    plt.figure(figsize=(12, 6))
-    scatter = plt.scatter(W[:, 0], W[:, 1], c=labels, cmap='viridis')
-    plt.colorbar(scatter)
-    plt.title('Cluster Assignments')
-    plt.xlabel('Component 1 Scores')
-    plt.ylabel('Component 2 Scores')
-    clusters_plot = save_plot_to_string()
-
-    # Return encoded plots as base64 strings for easy HTML embedding
-    return nmf_components_plot, clusters_plot
-
-def save_plot_to_string():
-    """Save the current matplotlib plot to a base64 string."""
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close()
-    buf.seek(0)
-    image_base64 = base64.b64encode(buf.read()).decode('ascii')
-    return image_base64
-
-def cluster_sample_count(cluster_labels):
-    sample_counts = np.bincount(cluster_labels)
-
-    # Create a bar chart
-    plt.figure(figsize=(10, 6))
-    clusters = np.arange(1, len(sample_counts) + 1)
-    plt.bar(clusters, sample_counts, color='skyblue')
-
-    # Add labels and title
-    plt.xlabel('Cluster Number')
-    plt.ylabel('Number of Samples')
-    plt.title('Number of Samples in Each Cluster')
-    plt.xticks(clusters)
-
-    # Save the plot to a BytesIO buffer instead of showing it directly
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close()  # Close the plot to free up memory
-    buf.seek(0)  # Go to the beginning of the BytesIO buffer
-
-    # Encode the image in base64 to embed in HTML
-    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    buf.close()  # Close the buffer to clean up
-
-    return image_base64
 
 def encode_plot_for_web(plot_path):
     with open(plot_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('ascii')
     
-def generate_plots_task(model_path, H, cluster_labels):
-    try:
-        logging.info("Starting prediction and plotting task...")
-        predictions, confidence_scores, H, y = make_predictions(H, cluster_labels, model_path)
-        logging.info("Predictions made, generating plots...")
-
-        nmf_components_plot, clusters_plot = generate_plots(H, H, cluster_labels, predictions)
-
-        if confidence_scores is not None:
-            confidence_plot = handle_confidence_plot(confidence_scores, H, cluster_labels)
-        else:
-            confidence_plot = "Confidence scores not available"
-
-        logging.info("Plots generated successfully.")
-        return {
-            'nmf_components_plot': nmf_components_plot,
-            'clusters_plot': clusters_plot,
-            'confidence_plot': confidence_plot,
-            'status': 'success'
-        }
-    except Exception as e:
-        logging.error("Error in generate_plots_task: {}".format(e), exc_info=True)
-        return {
-            'error': str(e),
-            'status': 'error'
-        }
+def generate_plots_task(H, labels, predictions):
+     # Plotting directly within the function without needing to save to disk first
+     confidence_plot = generate_confidence_plot(H, labels, predictions)
+     logging.info("Plots generated successfully.")
+     return confidence_plot

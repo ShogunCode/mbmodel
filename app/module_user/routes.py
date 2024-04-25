@@ -2,7 +2,6 @@ from flask import render_template, jsonify, request
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
 from app.module_user.tasks import process_file_async, test_task, async_generate_plots
-from app.module_model.plotting import generate_plots
 
 @bp.route('/')
 def index():
