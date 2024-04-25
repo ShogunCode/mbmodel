@@ -1,20 +1,8 @@
 from flask import render_template, jsonify, request
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
-from app.module_user.tasks import process_file_async, test_task, handle_file_and_plot
-
-# Test task
-#
-# Testing the logic of process_file
-# @celery_app.task
-# def process_file_async(file_path):
-#     return "Test successful with file path: " + str(file_path)
-
-@bp.route('/trigger_test_task')
-def trigger_test_task():
-    # This line sends the task to Celery and executes it asynchronously
-    task_result = test_task.delay()
-    return jsonify({'status': 'Task submitted!', 'task_id': task_result.id})
+from app.module_user.tasks import process_file_async, test_task, async_generate_plots
+from app.module_model.plotting import generate_plots
 
 @bp.route('/')
 def index():
@@ -33,24 +21,53 @@ def process_uploaded_file():
     file_path = request.json.get('file_path')
     if not file_path:
         return jsonify({'error': 'No file path provided'}), 400
-    
     try:
         result = process_file_async.delay(file_path)
         return jsonify({'message': 'File processing initiated', 'task_id': result.id}), 202
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    
 @bp.route('/plot', methods=['POST'])
 def plot_clusters():
-    file_path = request.json.get('file_path')
-    if not file_path:
-        return jsonify({'error': 'No file path provided'}), 400
+    data = request.get_json()
+    model_path = data.get('model_path')
+    H = data.get('H')  # Assuming H and cluster_labels are passed correctly; often, these will need parsing or validation
+    cluster_labels = data.get('cluster_labels')
+
+    if not model_path or H is None or cluster_labels is None:
+        return jsonify({'error': 'Missing required parameters'}), 400
 
     try:
-        handle_file_and_plot(file_path)
-        return jsonify({'message': 'File processed and plotted successfully'}), 200
+        # Dispatch the plotting job to Celery
+        task = async_generate_plots.delay(model_path, H, cluster_labels)
+        return jsonify({
+            'message': 'Plot generation initiated',
+            'task_id': task.id  # Return the Celery task ID to the client
+        }), 202
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/results/<task_id>', methods=['GET'])
+def get_results(task_id):
+    task = async_generate_plots.AsyncResult(task_id)  # Get the state of the task
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'status': 'Plot generation is still in progress...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'result': task.result,
+            'status': 'Plot generation completed.'
+        }
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
     
 @bp.route('/status/<task_id>', methods=['GET'])
 def get_status(task_id):
@@ -72,3 +89,16 @@ def get_status(task_id):
             'status': str(task.info),  # Exception raised
         }
     return jsonify(response)
+
+# Test task
+#
+# Testing the logic of process_file
+# @celery_app.task
+# def process_file_async(file_path):
+#     return "Test successful with file path: " + str(file_path)
+
+@bp.route('/trigger_test_task')
+def trigger_test_task():
+    # This line sends the task to Celery and executes it asynchronously
+    task_result = test_task.delay()
+    return jsonify({'status': 'Task submitted!', 'task_id': task_result.id})

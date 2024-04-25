@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medulloblastoma Classification</title>
+    <title>Medulloblastoma Classification Application</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
@@ -60,11 +60,18 @@
         <!-- Right section for placeholders and information -->
         <div class="w-3/4">
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Results Placeholders</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Results</h2>
                 <div class="space-y-4">
+                    <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;">
                     <!-- Placeholders for results and other information here -->
+                    <p id="statusText"></p>
                     <!-- Placeholder for t-SNE -->
-                    <!-- Placeholder for Confidence Interval Graph -->
+                    <div class="space-y-4">
+                        <h3>NMF Components</h3>
+                        <img id="nmfPlot" src="" alt="NMF Components">
+                        <h3>Cluster Assignments</h3>
+                        <img id="clustersPlot" src="" alt="Cluster Assignments">
+                    </div>
                     <!-- Add more placeholders as needed -->
                 </div>
             </div>
@@ -74,5 +81,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="/static/formValidation.js"></script>
     <script src="/static/fileUploadHandler.js" defer></script>
+    <script src="/static/processFile.js"></script>
 </body>
 </html>
