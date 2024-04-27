@@ -30,45 +30,52 @@ def normalize_decision_function(confidence_scores):
     max_val = np.max(confidence_scores)
     return 100 * (confidence_scores - min_val) / (max_val - min_val)
 
-def analyze_data(predictions, labels, confidence_scores, threshold=0.73):
-    n_samples = predictions.shape[0]
-    n_clusters = np.max(predictions) + 1  # Assuming predictions are 0-indexed cluster IDs
-    class_labels = [f'Cluster {i+1}' for i in range(n_clusters)] + ['Non-classified']
+def analyze_data(confidence_scores_str, threshold=0.73):
+    try:
+        # Convert the input string to a numpy array
+        confidence_scores = np.array(eval(confidence_scores_str))
+        
+        # Check if the array has the right shape
+        if confidence_scores.ndim != 2 or confidence_scores.shape[1] != 7:
+            raise ValueError("Input must be a 2D array with 7 columns representing clusters.")
+    except SyntaxError as e:
+        raise ValueError("Invalid input format: Please ensure the input string is a valid 2D list.") from e
 
-    normalize_decision_function(confidence_scores)
+    # Initialize an empty list to collect confidence scores for each cluster
+    cluster_confidences = [[] for _ in range(confidence_scores.shape[1])]
 
-    plt.figure(figsize=(14, 8))
-
-    data_to_plot = [[] for _ in range(n_clusters + 1)]  # +1 for non-classified category
-
-    for i in range(n_samples):
-        cluster_index = predictions[i]
-        max_confidence = np.max(confidence_scores[i])
-        if max_confidence < threshold * 100:
-            data_to_plot[-1].append(max_confidence)  # Non-classified category
+    # Iterate through each sample and assign it to the correct cluster
+    for sample in confidence_scores:
+        # Find the index (cluster number) of the max confidence score if above threshold
+        if max(sample) >= threshold:
+            cluster_number = np.argmax(sample)
+            cluster_confidences[cluster_number].append(max(sample))
         else:
-            data_to_plot[cluster_index].append(max_confidence)
+            # If no confidence score exceeds the threshold, assign it to a 'no cluster'
+            cluster_confidences.append([0])
 
-    positions = np.arange(1, n_clusters + 2)
-    bp = plt.boxplot(data_to_plot, positions=positions, patch_artist=True, notch=True, vert=True, showfliers=True, widths=0.6)
-    colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'grey', 'black']  # Additional color for non-classified
-
+    # Create the box plot
+    plt.figure(figsize=(14, 8))
+    bp = plt.boxplot(cluster_confidences, patch_artist=True, notch=True, vert=True, showfliers=True, widths=0.6)
+    
+    # Coloring each box
+    colors = ['tan', 'lightblue', 'lightgreen', 'lavender', 'orange', 'lightpink', 'lightgray']
     for patch, color in zip(bp['boxes'], colors):
         patch.set_facecolor(color)
-
-    plt.xticks(positions, class_labels)
-    plt.axhline(y=threshold * 100, color='r', linestyle='--')
-    plt.title('SVM Classifier Confidence by Predicted Cluster and Non-classified')
-    plt.ylabel('Confidence Score (%)')
-    plt.ylim(0, 100)
+    
+    # Adding titles and labels
+    plt.title('Confidence Scores by Cluster')
+    plt.xlabel('Cluster Number')
+    plt.ylabel('Confidence Scores')
+    plt.xticks(range(1, len(cluster_confidences) + 1), [f'Cluster {i+1}' for i in range(len(cluster_confidences))])
     plt.grid(True)
-    #plt.show()
-
-    # Save the plot to a file before showing it
-    plt_path = 'app/static/results/classifier_confidence_results.png'
+    
+    # Save and show the plot
+    plt_path = 'app/static/results/cluster_confidence_boxplot.png'
     plt.savefig(plt_path)
-    #plt.close()  # Close the plot to free up memory
-
+    # plt.show()
+    
+    return plt_path
 
 # def analyze_data(data, labels, confidence_scores):
 #     class_labels = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'NC']

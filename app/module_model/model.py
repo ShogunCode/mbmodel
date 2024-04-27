@@ -49,13 +49,17 @@ def make_predictions(H, cluster_labels, model_path):
         confidence_scores = svm_model.decision_function(H)
         # Normalize confidence scores to [0, 1] for interpretation
         confidence_scores = (confidence_scores - confidence_scores.min()) / (confidence_scores.max() - confidence_scores.min())
+        # Round confidence scores to 3 decimal places
+        confidence_scores = np.around(confidence_scores, decimals=3)
     elif hasattr(svm_model, "predict_proba"):
         confidence_scores = svm_model.predict_proba(H)
         # Take the maximum probability as confidence
         confidence_scores = np.max(confidence_scores, axis=1)
+        # Round confidence scores to 3 decimal places
+        confidence_scores = np.around(confidence_scores, decimals=3)
     else:
         # If no confidence information is available, return None
-        confidence_scores = None
+        confidence_scores = Noneconfidence_scores = None
 
     logging.info("Predictions completed successfully.")
 

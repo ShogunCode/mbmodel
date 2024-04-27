@@ -162,6 +162,22 @@ def write_json_to_file(task_id, json_response):
     except Exception as e:
         print(f"Failed to write to file {file_path}: {e}")
 
-
-
-
+# Cleans the output of confidence scores.
+def format_confidence_output(confidence_scores):
+    # Convert the numpy array to a string format, ensuring commas and precise formatting
+    array_string = np.array2string(confidence_scores, separator=', ', threshold=np.inf, max_line_width=np.inf, precision=3)
+    
+    # Adjust the string to ensure correct formatting:
+    # Strip the array to its core representation by removing the outer brackets
+    clean_string = array_string.strip('[]')
+    
+    # Split the string by rows of the original array
+    rows = clean_string.split(']\n [')
+    
+    # Reformat each row to ensure proper formatting, maintaining brackets and spaces
+    formatted_rows = ['[' + row.strip().replace('\n', '').replace(' ', '') + ']' for row in rows]
+    
+    # Join the rows with a newline character for clear separation
+    formatted_string = ',\n'.join(formatted_rows)
+    
+    return '[' + formatted_string + ']'

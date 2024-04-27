@@ -3,7 +3,7 @@ import app.config as config
 from app.module_data_processing.data_processing import process_file
 from flask import current_app
 import traceback
-from app.module_data_processing.data_processing import preprocess_data, transform_with_nmf, apply_kmeans, make_predictions, read_data_file, generate_json_response, store_in_redis, write_json_to_file
+from app.module_data_processing.data_processing import preprocess_data, transform_with_nmf, apply_kmeans, make_predictions, read_data_file, generate_json_response, store_in_redis, write_json_to_file, format_confidence_output
 from app.module_model.model import make_predictions
 from app.module_model.plotting import analyze_data, generate_plots_task
 import logging
@@ -38,10 +38,12 @@ def process_file_async(file_path):
             logging.info(f"Confidence Scores Shape: {confidence_scores.shape}")
             print(f"Confidence Scores: {confidence_scores}")
             print(f"Predictions: {predictions}")
+            str_confidence_scores = format_confidence_output(confidence_scores)
+            print(f"Confidence Scores After Formatting: {confidence_scores}")
             json_response = generate_json_response(predictions, confidence_scores)
             store_in_redis(task_id=str(process_file_async.request.id), json_response=json_response)
             #write_json_to_file(json_response, f"static/results/{process_file_async.request.id}.json")
-            plot_path = analyze_data(predictions, labels, confidence_scores)
+            plot_path = analyze_data(str_confidence_scores)
             return plot_path
         except Exception as e:
             print("Exception occurred within the context block.")
