@@ -46,10 +46,3 @@ function pollForResult(taskId) {
         });
     }, 3000); // Poll every 3 seconds
 }
-
-function updatePlots(data) {
-    // Example of handling plot data
-    document.getElementById('plotImage').src = 'data:image/png;base64,' + data.nmf_plot;
-    document.getElementById('nmfPlot').src = 'data:image/png;base64,' + data.nmf_components_plot;
-    document.getElementById('clustersPlot').src = 'data:image/png;base64,' + data.clusters_plot;
-}

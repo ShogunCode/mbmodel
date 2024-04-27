@@ -6,6 +6,9 @@ from flask import current_app
 import logging
 from app.module_model.model import make_predictions
 import numpy as np
+import json
+import redis
+import re
 
 # Read a data file from the given file path and return a pandas DataFrame
 def read_data_file(file_path):
@@ -115,10 +118,49 @@ def format_result(W, H, labels, predictions):
         'predictions': [np.array(pred).tolist() for pred in predictions]
     }
     
+def generate_json_response(predictions, confidences):
+    results = []
+    try:
+        for idx, (pred, conf) in enumerate(zip(predictions, confidences)):
+            # If confidences are multidimensional, choose a specific score.
+            # Example: Using the maximum score from each set of confidence scores
+            if isinstance(conf, np.ndarray):
+                conf = conf.max()  # or np.mean(conf), or any other appropriate measure
 
+            # Ensure the data types are serializable
+            result = {
+                "sample": int(idx + 1),
+                "cluster": int(pred),
+                "confidence": float(f"{conf:.2f}")  # Format and convert to float
+            }
+            results.append(result)
+        json_response = json.dumps(results)
+    except Exception as e:
+        logging.error(f"Failed to generate JSON response: {repr(e)}")
+        raise RuntimeError("Failed to generate valid JSON response") from e
+    return json_response
     
+r = redis.Redis(host='localhost', port=6379, db=0)
+def store_in_redis(task_id, json_response):
+    r.set(task_id, json_response)
+    r.expire(task_id, 3600)
 
+def write_json_to_file(task_id, json_response):
+    # Sanitize task_id to ensure it's valid for file names
+    sanitized_task_id = re.sub(r'[\\/*?:"<>|]', "", task_id)
+    file_path = f"static/results/{sanitized_task_id}_result.json"
+    
+    print(f"Sanitized Task ID: {sanitized_task_id}")
+    print(f"File Path: {file_path}")
 
+    try:
+        with open(file_path, "w") as file:
+            # Ensure json_response is a string in JSON format
+            if not isinstance(json_response, str):
+                json_response = json.dumps(json_response)
+            file.write(json_response)
+    except Exception as e:
+        print(f"Failed to write to file {file_path}: {e}")
 
 
 

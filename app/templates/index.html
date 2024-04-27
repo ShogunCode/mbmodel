@@ -6,9 +6,17 @@
     <title>Medulloblastoma Classification Application</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-12 flex">
-        
+    <header class="bg-white px-4 py-2">
+        <div class="container mx-auto flex items-center">
+            <img src="static\qub_logo.jpg" alt="University Logo" class="h-16 mr-4">
+            <h1 class="text-xl font-bold flex-1">Medulloblastoma Classification Application</h1>
+            <!-- The rest of the header content can go here if needed -->
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-12 flex">   
 <!-- Left vertical section -->
 <div class="w-1/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mr-4">
     <h1 class="font-bold text-gray-800 mb-4">Medulloblastoma Classification Tool</h1>
@@ -65,12 +73,10 @@
                     <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;">
                     <!-- Placeholders for results and other information here -->
                     <p id="statusText"></p>
-                    <!-- Placeholder for t-SNE -->
+                    <!-- Placeholder for Confidence Interval Plot -->
                     <div class="space-y-4">
-                        <h3>NMF Components</h3>
-                        <img id="nmfPlot" src="" alt="NMF Components">
-                        <h3>Cluster Assignments</h3>
-                        <img id="clustersPlot" src="" alt="Cluster Assignments">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Confidence Interval Plot</h3>
+                        <img id="tsneImage" src="" alt="t-SNE Plot" style="max-width: 100%;">
                     </div>
                     <!-- Add more placeholders as needed -->
                 </div>

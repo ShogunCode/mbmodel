@@ -2,6 +2,7 @@ import os
 from joblib import load
 import logging
 from flask import Blueprint
+import numpy as np
 
 bp = Blueprint('model', __name__)
 
@@ -43,12 +44,15 @@ def make_predictions(H, cluster_labels, model_path):
         logging.error(f"An error occurred during prediction: {str(e)}")
         raise
     
-        # Decision function values can be used as confidence scores in many SVM applications
+    # Retrieve decision function or probability estimates
     if hasattr(svm_model, "decision_function"):
         confidence_scores = svm_model.decision_function(H)
+        # Normalize confidence scores to [0, 1] for interpretation
+        confidence_scores = (confidence_scores - confidence_scores.min()) / (confidence_scores.max() - confidence_scores.min())
     elif hasattr(svm_model, "predict_proba"):
-        # If model supports probability estimates, use the max probability as confidence score
-        confidence_scores = svm_model.predict_proba(H).max(axis=1)
+        confidence_scores = svm_model.predict_proba(H)
+        # Take the maximum probability as confidence
+        confidence_scores = np.max(confidence_scores, axis=1)
     else:
         # If no confidence information is available, return None
         confidence_scores = None

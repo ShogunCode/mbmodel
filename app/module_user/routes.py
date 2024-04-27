@@ -1,7 +1,9 @@
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, Response
+import json
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
 from app.module_user.tasks import process_file_async, test_task, async_generate_plots
+import time
 
 @bp.route('/')
 def index():
@@ -88,6 +90,17 @@ def get_status(task_id):
             'status': str(task.info),  # Exception raised
         }
     return jsonify(response)
+
+@bp.route('/results_stream/<task_id>')
+def results_stream(task_id):
+    def generate():
+        task = process_file_async.AsyncResult(task_id)
+        while task.state not in ['SUCCESS', 'FAILURE']:
+            time.sleep(2)  # Delay between checks
+            task = process_file_async.AsyncResult(task_id)  # Refresh task status
+            yield f"data: {json.dumps({'status': task.state})}\n\n"
+        yield f"data: {json.dumps({'status': task.state, 'result': task.get() if task.state == 'SUCCESS' else 'Task failed'})}\n\n"
+    return Response(generate(), mimetype='text/event-stream')
 
 # Test task
 #
