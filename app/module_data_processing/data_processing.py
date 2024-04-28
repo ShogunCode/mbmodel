@@ -9,6 +9,7 @@ import numpy as np
 import json
 import redis
 import re
+import csv
 
 # Read a data file from the given file path and return a pandas DataFrame
 def read_data_file(file_path):
@@ -118,7 +119,7 @@ def format_result(W, H, labels, predictions):
         'predictions': [np.array(pred).tolist() for pred in predictions]
     }
     
-def generate_json_response(predictions, confidences):
+def generate_json_response(predictions, confidences, threshold):
     results = []
     try:
         for idx, (pred, conf) in enumerate(zip(predictions, confidences)):
@@ -134,7 +135,13 @@ def generate_json_response(predictions, confidences):
                 "confidence": float(f"{conf:.2f}")  # Format and convert to float
             }
             results.append(result)
-        json_response = json.dumps(results)
+        
+        # Append the threshold to the response
+        response = {
+            "results": results,
+            "threshold": threshold
+        }
+        json_response = json.dumps(response)
     except Exception as e:
         logging.error(f"Failed to generate JSON response: {repr(e)}")
         raise RuntimeError("Failed to generate valid JSON response") from e
@@ -181,3 +188,19 @@ def format_confidence_output(confidence_scores):
     formatted_string = ',\n'.join(formatted_rows)
     
     return '[' + formatted_string + ']'
+
+def create_csv(predictions, confidence_scores, filename='output.csv'):
+    # Define the headers for the CSV file
+    headers = ['Sample'] + [f'Confidence Score Cluster {i+1}' for i in range(7)] + ['Predicted Cluster']
+    
+    # Open a new CSV file
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        
+        # Write the header row
+        writer.writerow(headers)
+        
+        # Write each row of data
+        for index, (prediction, scores) in enumerate(zip(predictions, confidence_scores)):
+            row = [f'Sample_{index + 1}'] + list(scores) + [prediction]
+            writer.writerow(row)

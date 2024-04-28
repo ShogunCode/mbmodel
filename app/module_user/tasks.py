@@ -1,11 +1,10 @@
 from app.celery_utils import celery_app
 import app.config as config
-from app.module_data_processing.data_processing import process_file
 from flask import current_app
 import traceback
-from app.module_data_processing.data_processing import preprocess_data, transform_with_nmf, apply_kmeans, make_predictions, read_data_file, generate_json_response, store_in_redis, write_json_to_file, format_confidence_output
+from app.module_data_processing.data_processing import preprocess_data, transform_with_nmf, apply_kmeans, make_predictions, read_data_file, generate_json_response, store_in_redis, write_json_to_file, format_confidence_output, create_csv
 from app.module_model.model import make_predictions
-from app.module_model.plotting import analyze_data, generate_plots_task
+from app.module_model.plotting import analyze_data
 import logging
 
 @celery_app.task
@@ -21,6 +20,9 @@ def test_task():
 # /predict route calls this task
 @celery_app.task
 def process_file_async(file_path):
+    # get the task ID
+    task_id = process_file_async.request.id
+    print(f"Task ID: {task_id}")
     from app import create_app 
     # Try the config in here?
     app = create_app()
@@ -38,28 +40,20 @@ def process_file_async(file_path):
             logging.info(f"Confidence Scores Shape: {confidence_scores.shape}")
             print(f"Confidence Scores: {confidence_scores}")
             print(f"Predictions: {predictions}")
-            str_confidence_scores = format_confidence_output(confidence_scores)
-            print(f"Confidence Scores After Formatting: {confidence_scores}")
-            json_response = generate_json_response(predictions, confidence_scores)
+            result_csv = create_csv(predictions, confidence_scores, filename='output.csv')
+            #str_confidence_scores = format_confidence_output(confidence_scores)
+            #print(f"Confidence Scores After Formatting: {confidence_scores}")
+            logging.info("Generating JSON response.")
+            json_response = generate_json_response(predictions, confidence_scores, threshold=0.73)
+            logging.info("json_respone generated")
+            print(json_response)
             store_in_redis(task_id=str(process_file_async.request.id), json_response=json_response)
             #write_json_to_file(json_response, f"static/results/{process_file_async.request.id}.json")
-            plot_path = analyze_data(str_confidence_scores)
+            plot_path = analyze_data(json_response)
             return plot_path
         except Exception as e:
             print("Exception occurred within the context block.")
             traceback.print_exc()  # Print detailed traceback to standard output
             current_app.logger.error("An error occurred during file processing.", exc_info=True)
             raise  # Re-raise the exception for Celery to handle
-
-@celery_app.task
-def async_generate_plots(model_path, H, cluster_labels):
-    return generate_plots_task(model_path, H, cluster_labels)
            
-# @celery_app.task
-# def handle_file_and_plot(file_path):
-#     results = process_file(file_path)
-#     if results:
-#         cluster_labels = results['labels']
-#         cluster_sample_count(cluster_labels)
-#     else:
-#         current_app.logger.error("Failed to process file or no data to plot.")

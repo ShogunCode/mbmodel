@@ -2,7 +2,7 @@ from flask import render_template, jsonify, request, Response
 import json
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
-from app.module_user.tasks import process_file_async, test_task, async_generate_plots
+from app.module_user.tasks import process_file_async, test_task
 import time
 
 @bp.route('/')
@@ -28,67 +28,23 @@ def process_uploaded_file():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-@bp.route('/plot', methods=['POST'])
-def plot_clusters():
-    data = request.get_json()
-    model_path = data.get('model_path')
-    H = data.get('H')  # Assuming H and cluster_labels are passed correctly; often, these will need parsing or validation
-    cluster_labels = data.get('cluster_labels')
-
-    if not model_path or H is None or cluster_labels is None:
-        return jsonify({'error': 'Missing required parameters'}), 400
-
-    try:
-        # Dispatch the plotting job to Celery
-        task = async_generate_plots.delay(model_path, H, cluster_labels)
-        return jsonify({
-            'message': 'Plot generation initiated',
-            'task_id': task.id  # Return the Celery task ID to the client
-        }), 202
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@bp.route('/results/<task_id>', methods=['GET'])
-def get_results(task_id):
-    task = async_generate_plots.AsyncResult(task_id)  # Get the state of the task
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'status': 'Plot generation is still in progress...'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'result': task.result,
-            'status': 'Plot generation completed.'
-        }
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'status': str(task.info),  # this is the exception raised
-        }
-    return jsonify(response)
-    
+# Flask route to check the status of an ongoing task
 @bp.route('/status/<task_id>', methods=['GET'])
 def get_status(task_id):
+    # Retrieve the status of the task from Celery
     task = process_file_async.AsyncResult(task_id)
+
+    # Create a response based on the task state
     if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'status': 'Task is still processing'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'result': task.result
-        }
+        response = {'state': task.state, 'status': 'Task is still processing'}
+    elif task.state == 'SUCCESS':
+        response = {'state': task.state, 'result': task.result}
+    elif task.state == 'FAILURE':
+        response = {'state': task.state, 'status': str(task.info)}  # Exception info
     else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'status': str(task.info),  # Exception raised
-        }
+        response = {'state': task.state, 'status': 'Task is in an unknown state'}
+
+    # Return the task status as a JSON response
     return jsonify(response)
 
 @bp.route('/results_stream/<task_id>')
@@ -101,13 +57,6 @@ def results_stream(task_id):
             yield f"data: {json.dumps({'status': task.state})}\n\n"
         yield f"data: {json.dumps({'status': task.state, 'result': task.get() if task.state == 'SUCCESS' else 'Task failed'})}\n\n"
     return Response(generate(), mimetype='text/event-stream')
-
-# Test task
-#
-# Testing the logic of process_file
-# @celery_app.task
-# def process_file_async(file_path):
-#     return "Test successful with file path: " + str(file_path)
 
 @bp.route('/trigger_test_task')
 def trigger_test_task():
