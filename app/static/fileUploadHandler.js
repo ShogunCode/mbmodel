@@ -92,12 +92,17 @@ function pollForTaskCompletion(taskId) {
                 var response = JSON.parse(statusXhr.responseText);
                 console.log("Task status response: ", response);
                 if (response.state === 'SUCCESS') {
-                    // Handle success
-                    statusText.textContent = 'Processing completed successfully.';
-                    // Process the response.result as needed
-                } else if (response.state === 'FAILURE') {
-                    // Handle failure
-                    statusText.textContent = 'Processing failed.';
+                    // Handle success, display image or result
+                    const plotImage = document.getElementById('plotImage');
+                    if(response.result && response.result.image) {
+                        plotImage.src = 'data:image/png;base64,' + response.result.image;
+                        statusText.textContent = 'Data processed and plot generated.';
+                    } else {
+                        statusText.textContent = 'Data processed but no image to display.';
+                    }
+                } else if(response.state === 'FAILURE') {
+                    // Handle failure, display error message
+                    statusText.textContent = 'Task failed with error: ' + response.status;
                 } else {
                     // Continue polling
                     console.log('Processing still underway...');
