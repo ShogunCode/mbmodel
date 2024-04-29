@@ -1,91 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Medulloblastoma Classification Application</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="static/styles.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100">
+  <body class="bg-gray-100">
     <header class="bg-white px-4 py-2">
-        <div class="container mx-auto flex items-center">
-            <img src="static/qub_logo.jpg" alt="University Logo" class="h-16 mr-4">
-            <h1 class="text-xl font-bold flex-1">Medulloblastoma Classification Application</h1>
-            <!-- The rest of the header content can go here if needed -->
-        </div>
+      <div class="container mx-auto flex items-center">
+        <img src="static/qub_logo.jpg" alt="University Logo" class="h-16 mr-4" />
+        <h1 class="text-xl font-bold flex-1">Medulloblastoma Classification Application</h1>
+        <!-- The rest of the header content can go here if needed -->
+      </div>
     </header>
 
-    <div class="container mx-auto px-4 py-12 flex">   
-<!-- Left vertical section -->
-<div class="w-1/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mr-4">
-    <h1 class="font-bold text-gray-800 mb-4">Medulloblastoma Classification Tool</h1>
-    
-    <!-- First radio button group - Modular for more options later in development -->
-    <div class="mb-4">
-        <label class="font-bold text-gray-600">DNA Methylation</label>
-        <div>
-            <input type="radio" id="option1A" name="firstOption" value="A" checked>
+    <div class="container mx-auto px-4 py-12 flex">
+      <!-- Left vertical section -->
+      <div class="w-1/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mr-4">
+        <h1 class="font-bold text-gray-800 mb-4">Medulloblastoma Classification Tool</h1>
+
+        <!-- First radio button group - Modular for more options later in development -->
+        <div class="mb-4">
+          <label class="font-bold text-gray-600">DNA Methylation</label>
+          <div>
+            <input type="radio" id="option1A" name="firstOption" value="A" checked />
             <label for="option1A" class="text-gray-600 ml-2">Microarray</label>
+          </div>
         </div>
-    </div>
 
-    <!-- Second radio button group -->
-    <div class="mb-4">
-        <label class="font-bold text-gray-600">Cancer Type</label>
-        <div>
-            <input type="radio" id="option2A" name="secondOption" value="A" checked>
+        <!-- Second radio button group -->
+        <div class="mb-4">
+          <label class="font-bold text-gray-600">Cancer Type</label>
+          <div>
+            <input type="radio" id="option2A" name="secondOption" value="A" checked />
             <label for="option2A" class="text-gray-600 ml-2">Medulloblastoma</label>
+          </div>
         </div>
-    </div>
-    
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-violet-50 file:text-violet-700
-              hover:file:bg-violet-100">
-        <button type="button" id="uploadButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
-            Upload
-        </button>
-        <p id="statusText"></p>
-    </form>
-    
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="bg-green-100 border-t border-b border-green-500 text-green-700 px-4 py-3" role="alert">
-            <ul>
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        </div>
-      {% endif %}
-    {% endwith %}
-</div>
 
-        <!-- Right section for placeholders and information -->
-        <div class="w-3/4">
-            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Results</h2>
-                <div class="space-y-4">
-                    <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;">
-                    <!-- Placeholders for results and other information here -->
-                    <p id="statusText"></p>
-                    <!-- Placeholder for Confidence Interval Plot -->
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Test</h3>
-                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAEFkb2JlIEltYWdlUmVhZHlxyWU8AAAAWElEQVQ4y2NgGAWjYBSMglEwCkpExf+hXHEIwVRIJyNJG8BajXJ5NSMg5gIJX1MSkDoQNZk0KyQO0VdTHZDpGiaVmkFJDRUjcrZJARMDGbcPAKvlACCqAIXvGjIaZQAAAABJRU5ErkJggg==" style="width: 100%; border: 1px solid red;">
-                    </div>
-                    <!-- Add more placeholders as needed -->
-                </div>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold mb-4" />
+            <button type="button" id="uploadButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mb-4">Upload</button>
+            <p id="statusText" class="mb-4"></p>
+        </form>
+
+        {% with messages=get_flashed_messages() %}
+          {% if messages %}
+            <div class="bg-green-100 border-t border-b border-green-500 text-green-700 px-4 py-3" role="alert">
+              <ul>
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+              </ul>
             </div>
-        </div>
+          {% endif %}
+        {% endwith %}
+      </div>
 
+      <!-- Right section for placeholders and information -->
+      <div class="w-3/4">
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+          <div class="mb-5 border-b border-gray-200 dark:border-gray-700">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-styled-tab" data-tabs-toggle="#default-styled-tab-content" data-tabs-active-classes="text-custom-red hover:text-custom-red dark:text-custom-red dark:hover:text-custom-red border-custom-red dark:border-custom-red" data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300" role="tablist">
+              <li class="me-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg" id="profile-styled-tab" data-tabs-target="#styled-profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Profile</button>
+              </li>
+              <li class="me-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="dashboard-styled-tab" data-tabs-target="#styled-dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="false">Dashboard</button>
+              </li>
+              <li class="me-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="settings-styled-tab" data-tabs-target="#styled-settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Help</button>
+              </li>
+              <li role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="contacts-styled-tab" data-tabs-target="#styled-about" type="button" role="tab" aria-controls="contacts" aria-selected="false">About</button>
+              </li>
+            </ul>
+          </div>
+          <div id="default-styled-tab-content">
+            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="styled-profile" role="tabpanel" aria-labelledby="profile-tab">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Results</h2>
+              <div class="space-y-4">
+                <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;" />
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  This is some placeholder content the <strong class="font-medium text-gray-800 dark:text-white">Profile tab's associated content</strong>. Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes to control the content visibility and styling.
+                </p>
+              </div>
+            </div>
+            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="styled-dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                This is some placeholder content the <strong class="font-medium text-gray-800 dark:text-white">Dashboard tab's associated content</strong>. Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes to control the content visibility and styling.
+              </p>
+            </div>
+            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="styled-settings" role="tabpanel" aria-labelledby="settings-tab">
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                This is some placeholder content the <strong class="font-medium text-gray-800 dark:text-white">Settings tab's associated content</strong>. Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes to control the content visibility and styling.
+              </p>
+            </div>
+            <div class="hidden p-4" id="styled-about" role="tabpanel" aria-labelledby="about-tab">
+
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="/static/formValidation.js"></script>
     <script src="/static/fileUploadHandler.js" defer></script>
-</body>
+    <script src="/static/formValidation.js"></script>
+    <script src="/static/getContent.js"></script>
+    <script src="/static/flowbiteScript.js"></script>
+  </body>
+  <footer class="bg-gray-800 text-white text-center p-4">
+    © 2024 Research ML Classifier. All rights reserved.
+</footer>
 </html>
