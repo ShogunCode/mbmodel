@@ -1,0 +1,9 @@
+<tbody>
+    {% for row in data %}
+    <tr>
+        <td>{{ row['Sample'] }}</td>
+        <td>{{ row['Predicted Cluster'] }}</td>
+        <td>{{ row['Highest Probability Score'] }}</td>
+    </tr>
+    {% endfor %}
+</tbody>

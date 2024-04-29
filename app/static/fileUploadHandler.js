@@ -113,11 +113,13 @@ function pollForTaskCompletion(taskId) {
                     }
                     // Handle success, display image or result
                     const plotImage = document.getElementById('plotImage');
+                    console.log("Image data: ", response.result.image);
                     if (response.result && response.result.image) {
                         plotImage.src = 'data:image/png;base64,' + response.result.image;
                         statusText.textContent = 'Data processed and plot generated.';
                     } else {
                         statusText.textContent = 'Data processed but no image to display.';
+                        console.error("Expected image data not found in response: ", response.result);
                     }
                 } else if (response.state === 'FAILURE') {
                     // Handle failure, display error message

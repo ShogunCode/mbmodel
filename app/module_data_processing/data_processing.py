@@ -119,7 +119,9 @@ def format_result(W, H, labels, predictions):
         'predictions': [np.array(pred).tolist() for pred in predictions]
     }
     
-def generate_json_response(predictions, confidences, threshold):
+    
+    
+#def generate_json_response(predictions, confidences, threshold):
     results = []
     try:
         for idx, (pred, conf) in enumerate(zip(predictions, confidences)):
@@ -146,6 +148,52 @@ def generate_json_response(predictions, confidences, threshold):
         logging.error(f"Failed to generate JSON response: {repr(e)}")
         raise RuntimeError("Failed to generate valid JSON response") from e
     return json_response
+
+def generate_json_response(confidences):
+    num_clusters = confidences.shape[1]  # Number of columns in the array
+    response = []  # List to hold cluster-wise data
+    
+    for cluster_index in range(num_clusters):
+        cluster_scores = confidences[:, cluster_index]  # Extract scores for the current cluster
+        cluster_info = {
+            "Cluster": cluster_index + 1,
+            "Confidence Scores": cluster_scores.tolist()  # Convert array to list for JSON compatibility
+        }
+        response.append(cluster_info)
+    
+    # Convert the list to a JSON-formatted string
+    return json.dumps(response)
+
+
+
+# Working version of generate_json_response  
+# def generate_json_response(predictions, confidences, threshold):
+#     results = []
+#     try:
+#         for idx, (pred, conf) in enumerate(zip(predictions, confidences)):
+#             # If confidences are multidimensional, choose a specific score.
+#             # Example: Using the maximum score from each set of confidence scores
+#             if isinstance(conf, np.ndarray):
+#                 conf = conf.max()  # or np.mean(conf), or any other appropriate measure
+
+#             # Ensure the data types are serializable
+#             result = {
+#                 "sample": int(idx + 1),
+#                 "cluster": int(pred),
+#                 "confidence": float(f"{conf:.2f}")  # Format and convert to float
+#             }
+#             results.append(result)
+        
+#         # Append the threshold to the response
+#         response = {
+#             "results": results,
+#             "threshold": threshold
+#         }
+#         json_response = json.dumps(response)
+#     except Exception as e:
+#         logging.error(f"Failed to generate JSON response: {repr(e)}")
+#         raise RuntimeError("Failed to generate valid JSON response") from e
+#     return json_response    
     
 r = redis.Redis(host='localhost', port=6379, db=0)
 def store_in_redis(task_id, json_response):
