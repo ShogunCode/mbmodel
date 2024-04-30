@@ -1,9 +1,11 @@
-from flask import render_template, jsonify, request, Response
+from flask import render_template, jsonify, request, Response, send_from_directory
 import json
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
 from app.module_user.tasks import process_file_async, test_task
 import time
+import pandas as pd
+import os
 
 @bp.route('/')
 def index():
@@ -47,16 +49,42 @@ def get_status(task_id):
     # Return the task status as a JSON response
     return jsonify(response)
 
-@bp.route('/results_stream/<task_id>')
-def results_stream(task_id):
-    def generate():
-        task = process_file_async.AsyncResult(task_id)
-        while task.state not in ['SUCCESS', 'FAILURE']:
-            time.sleep(2)  # Delay between checks
-            task = process_file_async.AsyncResult(task_id)  # Refresh task status
-            yield f"data: {json.dumps({'status': task.state})}\n\n"
-        yield f"data: {json.dumps({'status': task.state, 'result': task.get() if task.state == 'SUCCESS' else 'Task failed'})}\n\n"
-    return Response(generate(), mimetype='text/event-stream')
+@bp.route('/get-results/<csv_filename>')
+def get_results(csv_filename):
+    csv_directory = 'C:/xampp/htdocs/mbmodel'
+    csv_path = os.path.join(csv_directory, csv_filename)
+
+    try:
+        if not os.path.isfile(csv_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        data = pd.read_csv(csv_path)
+
+        if data.empty:
+            return jsonify({'error': 'No data available'}), 200  # Optionally, handle empty data specifically
+
+        return jsonify(data.to_dict(orient='records'))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500  # General error handling
+
+# @bp.route('/get-results/<path:csv_filename>')
+# def get_results(csv_filename):
+#     # Use Flask's open_resource method to access files in the root directory
+#     try:
+#         csv_path = os.path.join(bp.root_path, csv_filename)
+#         print(f"Looking for file at: {csv_path}")  # Diagnostic print
+        
+#         # Check if file exists
+#         if not os.path.isfile(csv_path):
+#             print("File not found.")  # Diagnostic print
+#             return "File not found", 404  # Provide a 404 response
+        
+#         # File exists, proceed to read and return data
+#         processed_data = pd.read_csv(csv_path)
+#         return processed_data.to_json(orient='records')
+#     except Exception as e:
+#         print(f"An error occurred: {e}")  # Diagnostic print
+#         return str(e), 500  # Return a 500 Internal Server Error with the exception
 
 @bp.route('/trigger_test_task')
 def trigger_test_task():

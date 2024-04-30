@@ -12,25 +12,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const targetTab = event.target;
         console.log("Target tab:", targetTab);
         console.log("Data-tabs-target attribute:", targetTab.getAttribute('data-tabs-target'));
-    
+
         const targetPanel = document.querySelector(targetTab.getAttribute('data-tabs-target'));
         console.log("Target panel element:", targetPanel);
-    
+
         if (!targetPanel) {
             console.error("No element found for data-tabs-target:", targetTab.getAttribute('data-tabs-target'));
             return; // Early return to prevent errors
         }
-    
+
         tabPanels.forEach(panel => {
             panel.classList.add('hidden');
         });
-    
+
         tabs.forEach(tab => {
             tab.setAttribute('aria-selected', 'false');
             tab.classList.remove(...options.activeClasses.split(' '));
             tab.classList.add(...options.inactiveClasses.split(' '));
         });
-    
+
         targetTab.setAttribute('aria-selected', 'true');
         targetTab.classList.add(...options.activeClasses.split(' '));
         targetTab.classList.remove(...options.inactiveClasses.split(' '));
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Automatically click on the first tab to make it active
-    if(tabs.length > 0) {
+    if (tabs.length > 0) {
         tabs[0].click();
     }
 });

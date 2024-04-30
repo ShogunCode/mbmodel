@@ -96,6 +96,29 @@ function processFile(file_path) {
     processXhr.send(JSON.stringify({ file_path: file_path }));
 }
 
+function updateTable(csvFilename) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/get-results/' + encodeURIComponent(csvFilename), true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (window.table) {
+                window.table.clear();  // Ensure table is already defined
+                window.table.rows.add(data);
+                window.table.draw();
+            } else {
+                console.error("DataTable is not initialized yet.");
+            }
+        } else {
+            console.error("Failed to get result data: ", xhr.responseText);
+        }
+    };
+    xhr.onerror = function() {
+        console.error("Network error while fetching results.");
+    };
+    xhr.send();
+}
+
 function pollForTaskCompletion(taskId) {
     var statusText = document.getElementById('statusText');
     var checkStatus = function () {
@@ -110,6 +133,12 @@ function pollForTaskCompletion(taskId) {
                     var loadingBar = document.querySelector('.loading-bar'); // Make sure this selector matches your loading bar's class or id
                     if (loadingBar) {
                         loadingBar.remove();
+                    }
+                    if (response.result && response.result.processed_file) {
+                        window.updateTable(response.result.processed_file);
+                    } else {
+                        console.error("Expected processed CSV filename not found in response: ", response.result);
+                        statusText.textContent = 'Data processed but no results file to display.';
                     }
                     // Handle success, display image or result
                     const plotImage = document.getElementById('plotImage');

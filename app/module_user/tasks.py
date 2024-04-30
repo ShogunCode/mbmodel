@@ -50,7 +50,7 @@ def process_file_async(file_path):
             #store_in_redis(task_id=str(process_file_async.request.id), json_response=json_response)
             #write_json_to_file(json_response, f"static/results/{process_file_async.request.id}.json")
             process_csv(f'{task_id}.csv')
-            processed_filename = process_csv(f'processed_{task_id}.csv')
+            processed_filename = process_csv(f'{task_id}.csv')
             plot_path = analyze_data(f'{task_id}.csv', threshold=0.60)
             return {'processed_file': processed_filename, 'image': plot_path}
         except Exception as e:
