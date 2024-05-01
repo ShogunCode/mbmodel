@@ -10,6 +10,10 @@ import json
 import redis
 import re
 import csv
+from app.config import Config 
+
+# Set up basic configuration for logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Read a data file from the given file path and return a pandas DataFrame
 def read_data_file(file_path):
@@ -164,8 +168,6 @@ def generate_json_response(confidences):
     # Convert the list to a JSON-formatted string
     return json.dumps(response)
 
-
-
 # Working version of generate_json_response  
 # def generate_json_response(predictions, confidences, threshold):
 #     results = []
@@ -238,17 +240,27 @@ def format_confidence_output(confidence_scores):
     return '[' + formatted_string + ']'
 
 def create_csv(predictions, confidence_scores, filename='output.csv'):
-    # Define the headers for the CSV file
+    logging.info("Starting to create CSV file")
     headers = ['Sample'] + [f'Confidence Score Cluster {i+1}' for i in range(7)] + ['Predicted Cluster']
     
-    # Open a new CSV file
-    with open(filename, 'w', newline='') as file:
-        writer = csv.writer(file)
-        
-        # Write the header row
-        writer.writerow(headers)
-        
-        # Write each row of data
-        for index, (prediction, scores) in enumerate(zip(predictions, confidence_scores)):
-            row = [f'Sample_{index + 1}'] + list(scores) + [prediction]
-            writer.writerow(row)
+    output_dir = Config.CSV_OUTPUT_DIR
+    logging.debug(f"Output directory: {output_dir}")
+
+    try:
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            logging.info(f"Created directory: {output_dir}")
+    
+        full_path = os.path.join(output_dir, filename)
+        with open(full_path, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(headers)
+            for index, (prediction, scores) in enumerate(zip(predictions, confidence_scores)):
+                row = [f'Sample_{index + 1}'] + list(scores) + [prediction]
+                writer.writerow(row)
+            logging.info(f"CSV file created successfully at {full_path}")
+    except Exception as e:
+        logging.error("Failed to create CSV file", exc_info=True)
+        raise  # Optionally re-raise the exception after logging it
+
+    return full_path

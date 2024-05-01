@@ -1,4 +1,4 @@
-fetch('static/about.html')
+fetch('static/html/about.html')
   .then(response => response.text())
   .then(html => {
     document.getElementById('styled-about').innerHTML = html;

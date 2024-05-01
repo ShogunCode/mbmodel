@@ -7,4 +7,6 @@ class Config:
     ML_MODEL_PATH = 'app/module_model/svm_model.joblib'
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CSV_OUTPUT_DIR = 'app/static/results/'
+    CSV_ROUTE_FOLDER = 'C:/xampp/htdocs/mbmodel/app/static/results'
     

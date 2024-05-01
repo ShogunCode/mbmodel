@@ -10,7 +10,7 @@ bp = Blueprint('model', __name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Model more suited for logging due to backend operation & sys admin
-def make_predictions(H, cluster_labels, model_path):
+def make_predictions(H, model_path):
     logging.info("Current working directory: " + os.getcwd())
     full_path = os.path.join(os.getcwd(), model_path)
     if os.path.exists(full_path):
@@ -21,7 +21,6 @@ def make_predictions(H, cluster_labels, model_path):
 
     logging.info("Loading the data.")
     X = H
-    y = cluster_labels  # Not used in prediction currently
 
     try:
         logging.info(f"Loading the SVM model from {full_path}.")
@@ -63,4 +62,4 @@ def make_predictions(H, cluster_labels, model_path):
 
     logging.info("Predictions completed successfully.")
 
-    return predictions, confidence_scores, H, y
+    return predictions, confidence_scores, H

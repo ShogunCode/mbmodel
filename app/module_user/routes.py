@@ -6,6 +6,7 @@ from app.module_user.tasks import process_file_async, test_task
 import time
 import pandas as pd
 import os
+from app.config import Config
 
 @bp.route('/')
 def index():
@@ -49,23 +50,45 @@ def get_status(task_id):
     # Return the task status as a JSON response
     return jsonify(response)
 
+@bp.route('/cluster-data/<task_id>', methods=['GET'])
+def cluster_data(task_id):
+    task = process_file_async.AsyncResult(task_id)
+    if task.state == 'SUCCESS':
+        result = task.get()
+        
+        return jsonify(result['cluster_count'])  # Use jsonify to return a JSON response
+    elif task.state == 'FAILURE':
+        return jsonify({'error': 'Failed to process file'}), 500
+    else:
+        return jsonify({'message': 'Data not ready'}), 202
+
 @bp.route('/get-results/<csv_filename>')
 def get_results(csv_filename):
-    csv_directory = 'C:/xampp/htdocs/mbmodel'
+    # Ensure the filename does not contain unsafe path elements
+    if '..' in csv_filename or '/' in csv_filename:
+        return jsonify({'error': 'Invalid path'}), 400
+
+    # Build the full path to the CSV file
+    csv_directory = Config.CSV_OUTPUT_DIR
     csv_path = os.path.join(csv_directory, csv_filename)
 
     try:
+        # Check if the file exists and is a file, not a directory
         if not os.path.isfile(csv_path):
             return jsonify({'error': 'File not found'}), 404
 
+        # Read the CSV file into a DataFrame
         data = pd.read_csv(csv_path)
 
+        # Check if the DataFrame is empty
         if data.empty:
-            return jsonify({'error': 'No data available'}), 200  # Optionally, handle empty data specifically
+            return jsonify({'error': 'No data available'}), 200
 
+        # Convert DataFrame to a dictionary in record orientation and send as JSON
         return jsonify(data.to_dict(orient='records'))
     except Exception as e:
-        return jsonify({'error': str(e)}), 500  # General error handling
+        # Handle unexpected errors
+        return jsonify({'error': str(e)}), 500
 
 # @bp.route('/get-results/<path:csv_filename>')
 # def get_results(csv_filename):

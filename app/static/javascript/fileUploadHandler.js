@@ -97,13 +97,15 @@ function processFile(file_path) {
 }
 
 function updateTable(csvFilename) {
+    // Extract the filename if a path is given
+    var filename = csvFilename.split('/').pop();  // This will get only the filename, stripping any path
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/get-results/' + encodeURIComponent(csvFilename), true);
-    xhr.onload = function() {
+    xhr.open('GET', '/get-results/' + encodeURIComponent(filename), true);
+    xhr.onload = function () {
         if (xhr.status === 200) {
             var data = JSON.parse(xhr.responseText);
             if (window.table) {
-                window.table.clear();  // Ensure table is already defined
+                window.table.clear();
                 window.table.rows.add(data);
                 window.table.draw();
             } else {
@@ -113,14 +115,81 @@ function updateTable(csvFilename) {
             console.error("Failed to get result data: ", xhr.responseText);
         }
     };
-    xhr.onerror = function() {
+    xhr.onerror = function () {
         console.error("Network error while fetching results.");
     };
     xhr.send();
 }
 
+function updatePieChart(taskId) {
+    fetch('/cluster-data/' + taskId)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Received data:", data);  // Debug to see the received data
+            console.log("Type of data:", typeof data);
+
+            const ctx = document.getElementById('pieChart').getContext('2d');
+
+            // Generate labels only for existing keys
+            const labels = Object.keys(data)
+                                 .filter(key => data[key] !== undefined && data[key] !== null)  // Ensure only valid data is used
+                                 .map(key => `Cluster ${key}`);  // Map to "Cluster X" format
+
+            console.log("Labels:", labels);  // Log the labels to verify
+
+            const values = Object.values(data).filter(value => value !== undefined && value !== null);
+            console.log("Values:", values);  // Log the values to verify
+
+            const backgroundColors = generateColors(labels.length);  // Generate colors based on the number of labels
+
+            if (window.pieChart instanceof Chart) {
+                window.pieChart.destroy();  // Safely destroy existing chart
+            }
+
+            window.pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Samples per Cluster',
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching pie chart data:', error));
+}
+
+// Function to generate colors dynamically
+function generateColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        // Generate a random color
+        const red = Math.floor(Math.random() * 256);
+        const green = Math.floor(Math.random() * 256);
+        const blue = Math.floor(Math.random() * 256);
+        colors.push(`rgba(${red}, ${green}, ${blue}, 0.2)`);
+    }
+    return colors;
+}
+
 function pollForTaskCompletion(taskId) {
     var statusText = document.getElementById('statusText');
+    var downloadButton = null; // Declare download button here to ensure it is accessible throughout the function
+    var downloadContainer = document.getElementById('downloadButtonContainer'); // Define the container where the download button will be appended
     var checkStatus = function () {
         var statusXhr = new XMLHttpRequest();
         statusXhr.open('GET', '/status/' + taskId, true);
@@ -136,16 +205,28 @@ function pollForTaskCompletion(taskId) {
                     }
                     if (response.result && response.result.processed_file) {
                         window.updateTable(response.result.processed_file);
+
+                        // Check if the button does not exist, then create it
+                        if (!downloadButton) {
+                            downloadButton = document.createElement('a');
+                            downloadButton.textContent = 'Download Results';
+                            downloadButton.className = 'download-button';
+                            downloadContainer.appendChild(downloadButton); // Ensure this element is correctly targeted
+                        }
+                        // Update the download button's link with the new filename
+                        downloadButton.href = response.result.processed_file;
                     } else {
                         console.error("Expected processed CSV filename not found in response: ", response.result);
                         statusText.textContent = 'Data processed but no results file to display.';
                     }
+                    updatePieChart(taskId); // Assuming response.result contains data for the pie chart
+                    statusText.textContent = 'Pie Chart Update completed successfully.';
                     // Handle success, display image or result
                     const plotImage = document.getElementById('plotImage');
                     console.log("Image data: ", response.result.image);
                     if (response.result && response.result.image) {
                         plotImage.src = 'data:image/png;base64,' + response.result.image;
-                        statusText.textContent = 'Data processed and plot generated.';
+                        statusText.textContent = 'Data processed successfully.';
                     } else {
                         statusText.textContent = 'Data processed but no image to display.';
                         console.error("Expected image data not found in response: ", response.result);

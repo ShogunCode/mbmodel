@@ -10,11 +10,22 @@ import logging
 import json
 import scipy.stats as stats
 from flask import jsonify
+import os
 
 # Configure logging to show messages of severity INFO and above
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def process_csv(csv_path):
+def cluster_count(predictions):
+    # Use numpy's unique function to find unique elements and their counts
+    clusters, counts = np.unique(predictions, return_counts=True)
+    # Convert clusters and counts to Python native int
+    clusters = clusters.astype(int).tolist()  # Converts and makes a list of Python integers
+    counts = counts.astype(int).tolist()  # Converts and makes a list of Python integers
+    # Create a dictionary from clusters and counts
+    cluster_counts = dict((cluster + 1, count) for cluster, count in zip(clusters, counts))
+    return cluster_counts  # Return the dictionary directly
+
+def process_csv(csv_path, output_dir):
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_path)
     
@@ -27,9 +38,18 @@ def process_csv(csv_path):
     confidence_scores = df.iloc[:, 1:8]  # Assuming the first 7 columns after 'Sample' are confidence scores
     processed_data['Highest Probability Score'] = confidence_scores.max(axis=1)
     
-    processed_filename = f'processed_{csv_path}'
-    processed_data.to_csv(processed_filename, index=False)
-    return processed_filename
+    # Check if the output directory exists, if not, create it
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Define the path for the processed file
+    basename = os.path.basename(csv_path)
+    processed_filename = f'processed_{basename}'
+    full_path = os.path.join(output_dir, processed_filename)
+    
+    # Save the processed data to CSV in the specified directory
+    processed_data.to_csv(full_path, index=False)
+    return full_path
 
 def analyze_data(csv_file, threshold):
     # Read the CSV file

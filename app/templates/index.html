@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Medulloblastoma Classification Application</title>
-    <link href="static/styles.css" rel="stylesheet" />
-    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" rel="stylesheet"/>
+    <link href="static/css/styles.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" rel="stylesheet" />
   </head>
 
   <body class="bg-gray-100">
     <header class="bg-white px-4 py-2">
       <div class="container mx-auto flex items-center">
-        <img src="static/qub_logo.jpg" alt="University Logo" class="h-16 mr-4"/>
+        <img src="static/images/qub_logo.jpg" alt="University Logo" class="h-16 mr-4" />
         <h1 class="text-xl font-bold flex-1">Medulloblastoma Classification Application</h1>
       </div>
     </header>
@@ -20,8 +20,8 @@
       <!-- Left vertical section -->
       <div class="w-1/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mr-4">
         <h1 class="text-xl font-bold text-gray-800 mb-4">Classification Parameters</h1>
-        <hr class="my-6 border-gray-300"/>
-        <br>
+        <hr class="my-6 border-gray-300" />
+        <br />
         <!-- First radio button group - Modular for more options later in development -->
         <div class="mb-4">
           <label class="font-bold text-gray-600">DNA Methylation</label>
@@ -41,7 +41,7 @@
         </div>
 
         <form id="uploadForm" enctype="multipart/form-data">
-          <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold mb-4" />
+          <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-2 file:text-sm file:font-semibold mb-4" />
           <button type="button" id="uploadButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mb-4">Upload</button>
           <p id="statusText" class="mb-4"></p>
         </form>
@@ -71,10 +71,13 @@
                 <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="dashboard-styled-tab" data-tabs-target="#styled-dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="false">Classification Table</button>
               </li>
               <li class="me-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="settings-styled-tab" data-tabs-target="#styled-settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Help</button>
+                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="classdib-styled-tab" data-tabs-target="#styled-classdib" type="button" role="tab" aria-controls="settings" aria-selected="false">Classification Distribution</button>
               </li>
-              <li role="presentation">
+              <li role="me-2 presentation">
                 <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="contacts-styled-tab" data-tabs-target="#styled-about" type="button" role="tab" aria-controls="contacts" aria-selected="false">About</button>
+              </li>
+              <li role="me-2 presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="help-styled-tab" data-tabs-target="#styled-help" type="button" role="tab" aria-controls="contacts" aria-selected="false">Help</button>
               </li>
             </ul>
           </div>
@@ -83,50 +86,46 @@
               <h2 class="text-lg font-semibold text-gray-900 mb-4">Results</h2>
               <div class="space-y-4">
                 <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;" />
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-
-                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400"></p>
               </div>
             </div>
             <div class="p-4 rounded-lg shadow-lg bg-white w-full" id="styled-dashboard" role="tabpanel" aria-labelledby="table-tab">
-              <table id="predictionsTable" class="min-w-full table-auto divide-y divide-gray-200 leading-normal">
+              <table id="predictionsTable" class="row-border stripe hover min-w-full table-auto divide-y divide-gray-200 leading-normal">
                 <thead>
                   <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Sample
-                    </th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Predicted Cluster
-                    </th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Probability Score
-                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sample</th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Predicted Cluster</th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Probability Score</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for row in data %}
-                  <tr class="bg-white hover:bg-gray-100">
-                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
-                      <div class="text-gray-900 whitespace-no-wrap">{{ row['Sample'] }}</div>
-                    </td>
-                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
-                      <div class="text-gray-900 whitespace-no-wrap">{{ row['Predicted Cluster'] }}</div>
-                    </td>
-                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
-                      <div class="text-gray-900 whitespace-no-wrap">{{ row['Highest Probability Score'] }}</div>
-                    </td>
-                  </tr>
+                    <tr class="bg-white hover:bg-gray-100">
+                      <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
+                        <div class="text-gray-900 whitespace-no-wrap">{{ row['Sample'] }}</div>
+                      </td>
+                      <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
+                        <div class="text-gray-900 whitespace-no-wrap">{{ row['Predicted Cluster'] }}</div>
+                      </td>
+                      <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
+                        <div class="text-gray-900 whitespace-no-wrap">{{ row['Highest Probability Score'] }}</div>
+                      </td>
+                    </tr>
                   {% endfor %}
                 </tbody>
               </table>
+              <div id="downloadButtonContainer" class="mt-4 text-center">
+                <!-- Download button  -->
+            </div>
               <!-- Table Tab -->
             </div>
-            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="styled-settings" role="tabpanel" aria-labelledby="settings-tab">
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                This is some placeholder content the <strong class="font-medium text-gray-800 dark:text-white">Settings tab's associated content</strong>. Clicking another tab will toggle the visibility of this one for the next. The tab JavaScript swaps classes to control the content visibility and styling.
-              </p>
+            <div class="hidden p-4 rounded-lg" id="styled-classdib" role="tabpanel" aria-labelledby="classdib-tab">
+              <canvas id="pieChart"></canvas>
             </div>
             <div class="hidden p-4" id="styled-about" role="tabpanel" aria-labelledby="about-tab">
+              <!-- About Tab -->
+            </div>
+            <div class="hidden p-4" id="styled-help" role="tabpanel" aria-labelledby="help-tab">
               <!-- About Tab -->
             </div>
           </div>
@@ -135,11 +134,12 @@
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
-    <script src="/static/dataTableInit.js"></script>
-    <script src="/static/fileUploadHandler.js" defer></script>
-    <script src="/static/formValidation.js"></script>
-    <script src="/static/flowbiteScript.js"></script>
-    <script src="/static/getContent.js"></script>
+    <script src="/static/javascript/dataTableInit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/javascript/fileUploadHandler.js" defer></script>
+    <script src="/static/javascript/formValidation.js"></script>
+    <script src="/static/javascript/flowbiteScript.js"></script>
+    <script src="/static/javascript/getContent.js"></script>
   </body>
   <footer class="bg-gray-800 text-white text-center p-4">© 2024 Research ML Classifier. All rights reserved.</footer>
 </html>
