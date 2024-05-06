@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    command: python test_run.py
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+      - worker
+
+  worker:
+    build: .
+    command: celery -A app.celery_utils.celery_app worker -P eventlet -l info -E
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    expose:
+      - "6379"

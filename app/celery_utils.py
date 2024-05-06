@@ -1,5 +1,6 @@
 # celery_utils.py
 from celery import Celery
+import eventlet 
 
 celery_app = Celery(__name__)
 celery_app.conf.update(

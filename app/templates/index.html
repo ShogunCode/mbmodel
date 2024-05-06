@@ -44,19 +44,23 @@
           <input type="file" name="file" id="fileInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-2 file:text-sm file:font-semibold mb-4" />
           <button type="button" id="uploadButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mb-4">Upload</button>
           <p id="statusText" class="mb-4"></p>
+          {% with messages=get_flashed_messages() %}
+            {% if messages %}
+              <div class="bg-green-100 border-t border-b border-green-500 text-green-700 px-4 py-3" role="alert">
+                <ul>
+                  {% for message in messages %}
+                    <li>{{ message }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+          <button type="button" id="processButton" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-2">Process Data</button>
+          <br />
+          <p class="text-sm text-gray-500">
+            This is a research application for the classification of Medulloblastoma tumours into one of 7 sub-groups.<br /><br />Please read the guide before using the application. Note: Only .txt or .csv files are permitted.
+          </p>
         </form>
-
-        {% with messages=get_flashed_messages() %}
-          {% if messages %}
-            <div class="bg-green-100 border-t border-b border-green-500 text-green-700 px-4 py-3" role="alert">
-              <ul>
-                {% for message in messages %}
-                  <li>{{ message }}</li>
-                {% endfor %}
-              </ul>
-            </div>
-          {% endif %}
-        {% endwith %}
       </div>
 
       <!-- Right section for placeholders and information -->
@@ -115,12 +119,16 @@
                 </tbody>
               </table>
               <div id="downloadButtonContainer" class="mt-4 text-center">
-                <!-- Download button  -->
+                <!-- Download button -->
+              </div>
+              <!-- Table Tab --> 
             </div>
-              <!-- Table Tab -->
-            </div>
-            <div class="hidden p-4 rounded-lg" id="styled-classdib" role="tabpanel" aria-labelledby="classdib-tab">
-              <canvas id="pieChart"></canvas>
+            <div class="p-4 rounded-lg shadow-lg bg-white flex flex-col items-center justify-center" id="styled-classdib" role="tabpanel" aria-labelledby="classdib-tab">
+              <div class="w-full lg:w-3/4">
+                <canvas id="pieChart"></canvas>
+              </div>
+              <div id="chartStats" class="mt-4 w-full text-center"></div>
+              <div id="newChartStats" class="mt-2 w-full text-center text-lg font-bold"></div>
             </div>
             <div class="hidden p-4" id="styled-about" role="tabpanel" aria-labelledby="about-tab">
               <!-- About Tab -->

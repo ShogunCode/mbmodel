@@ -2,8 +2,7 @@
 from flask import Flask
 from app.config import Config
 import logging
-from app.celery_utils import init_celery, celery_app
-from app.module_user.tasks import test_task
+from app.celery_utils import init_celery
 
 
 def create_app():
