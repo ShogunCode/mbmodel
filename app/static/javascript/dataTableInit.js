@@ -14,7 +14,7 @@ $(document).ready(function () {
         }],
         "columns": [    // Defines the columns for the data table
             { "data": "Sample", "title": "Sample" },
-            { "data": "Predicted Cluster", "title": "Predicted Cluster" },
+            { "data": "Predicted Cluster", "title": "Sample Classification" },
             { "data": "Highest Probability Score", "title": "Highest Probability Score" }
         ]
     });

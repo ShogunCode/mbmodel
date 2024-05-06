@@ -1,0 +1,11 @@
+Sample,Confidence Score Cluster 1,Confidence Score Cluster 2,Confidence Score Cluster 3,Confidence Score Cluster 4,Confidence Score Cluster 5,Confidence Score Cluster 6,Confidence Score Cluster 7,Predicted Cluster
+Sample_1,0.693,0.465,0.151,0.848,0.302,0.999,0.002,SHH_Old
+Sample_2,0.527,0.001,0.304,0.151,0.849,0.696,0.998,WNT
+Sample_3,0.849,0.151,0.151,0.301,0.636,0.304,0.999,WNT
+Sample_4,0.601,0.45,1.0,0.85,0.3,0.15,0.0,Grp4_HighRisk
+Sample_5,0.45,1.0,0.45,0.85,0.452,0.15,0.001,Grp3_LowRisk
+Sample_6,0.3,1.0,0.601,0.849,0.451,0.0,0.153,Grp3_LowRisk
+Sample_7,0.455,0.604,0.152,0.0,1.0,0.848,0.303,SHH_Inf
+Sample_8,0.47,0.846,0.001,0.697,0.304,0.997,0.158,SHH_Old
+Sample_9,0.999,0.849,0.302,0.451,0.303,0.001,0.459,Grp3_HighRisk
+Sample_10,0.695,0.304,0.001,0.546,0.152,0.999,0.842,SHH_Old

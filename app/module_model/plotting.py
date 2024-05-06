@@ -61,14 +61,30 @@ def analyze_data(csv_file):
     cluster_columns = [col for col in df.columns if 'Confidence Score Cluster' in col]
     logging.info(f"Identifying cluster data columns: {cluster_columns}")
     
+    # Define color map for clusters
+    cluster_color_map = {
+        'Grp4_HighRisk': '#91BDA6',
+        'Grp4_LowRisk': '#C7DEB2',
+        'SHH_Inf': '#EF3125',
+        'Grp3_HighRisk': '#FAB79C',
+        'Grp3_LowRisk': '#FFEB95',
+        'SHH_Old': '#B40838',
+        'WNT': '#9AD3E4'
+    }
+    
     # Plotting
     fig, ax = plt.subplots(figsize=(12, 8))
     data_to_plot = [df[col].dropna() for col in cluster_columns]
-    labels = cluster_columns
+    
     box = ax.boxplot(data_to_plot, patch_artist=True, vert=True)
     
-    # Assign colors and set labels to include the most frequent predicted cluster for each cluster column
-    colors = plt.cm.viridis(np.linspace(0, 1, len(data_to_plot)))
+    # Assign colors based on the most frequent predicted cluster for each cluster column
+    colors = []
+    for col in cluster_columns:
+        most_common_cluster = df[df[col] == df[col].max()]['Predicted Cluster'].mode()[0]
+        color = cluster_color_map.get(most_common_cluster, '#000000')  # Default to black if no match found
+        colors.append(color)
+    
     for patch, color in zip(box['boxes'], colors):
         patch.set_facecolor(color)
     
@@ -76,21 +92,12 @@ def analyze_data(csv_file):
     new_labels = []
     for col in cluster_columns:
         cluster_number = col.split()[-1]  # Extract the cluster number from the column name
-        # Find the most frequent cluster name associated with this score cluster
         most_common_cluster = df[df[col] == df[col].max()]['Predicted Cluster'].mode()[0]
         new_labels.append(f"{most_common_cluster}")
     
-    plt.xticks(range(1, len(labels) + 1), new_labels, rotation=45)
+    plt.xticks(range(1, len(new_labels) + 1), new_labels, rotation=45)
     plt.ylabel('Confidence Score')
     plt.title('Confidence Scores per Cluster with Predicted Cluster Annotation')
-    
-    # Correctly prepare handles and labels for the legend
-    handles, labels = [], []
-    for color, label in zip(colors, new_labels):
-        handle = plt.Line2D([0], [0], color=color, lw=4)
-        handles.append(handle)
-        labels.append(label)
-    ax.legend(handles, labels)
     
     # Convert plot to PNG image in bytes
     buf = io.BytesIO()
