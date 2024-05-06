@@ -3,6 +3,7 @@ from flask import Flask
 from app.config import Config
 import logging
 from app.celery_utils import init_celery
+from app.module_user.tasks import test_task
 
 
 def create_app():

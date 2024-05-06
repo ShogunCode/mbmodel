@@ -59,6 +59,7 @@ def preprocess_data(df):
 
 # Dimenionality Reduction of the data using NMF
 def transform_with_nmf(df, n_components):
+    logging.info("Starting NMF transformation")
     if df is not None:
         print("Data shape before NMF:", df.shape)  # Log the shape of the data
         if df.shape[1] == 0:  # Check if there are no columns
@@ -76,6 +77,7 @@ def transform_with_nmf(df, n_components):
 
 # Apply KMeans clustering to the data
 def apply_kmeans(H, n_clusters=7):
+    logging.info("Applying K-means clustering")
     kmeans = KMeans(n_clusters=n_clusters)
     kmeans.fit(H)
     return kmeans.labels_, kmeans
@@ -115,6 +117,7 @@ def process_file(file_path):
 
 # Format the results into a structured dictionary or object    
 def format_result(W, H, labels, predictions):
+    logging.info("Formatting results")
     # Format the results into a structured dictionary or object
     return {
         'W': W.tolist(), 
@@ -153,7 +156,9 @@ def format_result(W, H, labels, predictions):
         raise RuntimeError("Failed to generate valid JSON response") from e
     return json_response
 
+# Generate a JSON response from the confidence scores
 def generate_json_response(confidences):
+    logging.info("Generating JSON response")
     num_clusters = confidences.shape[1]  # Number of columns in the array
     response = []  # List to hold cluster-wise data
     
@@ -198,11 +203,14 @@ def generate_json_response(confidences):
 #     return json_response    
     
 r = redis.Redis(host='localhost', port=6379, db=0)
+# Store the JSON response in Redis with a time-to-live (TTL) of 1 hour
 def store_in_redis(task_id, json_response):
     r.set(task_id, json_response)
     r.expire(task_id, 3600)
 
+# Retrieve the JSON response from Redis
 def write_json_to_file(task_id, json_response):
+    logging.info("Writing JSON response to file")
     # Sanitize task_id to ensure it's valid for file names
     sanitized_task_id = re.sub(r'[\\/*?:"<>|]', "", task_id)
     file_path = f"static/results/{sanitized_task_id}_result.json"
@@ -221,6 +229,7 @@ def write_json_to_file(task_id, json_response):
 
 # Cleans the output of confidence scores.
 def format_confidence_output(confidence_scores):
+    logging.info("Formatting confidence scores")
     # Convert the numpy array to a string format, ensuring commas and precise formatting
     array_string = np.array2string(confidence_scores, separator=', ', threshold=np.inf, max_line_width=np.inf, precision=3)
     
@@ -239,6 +248,7 @@ def format_confidence_output(confidence_scores):
     
     return '[' + formatted_string + ']'
 
+# Create a CSV file with the predictions and confidence scores
 def create_csv(predictions, confidence_scores, filename='output.csv'):
     logging.info("Starting to create CSV file")
     headers = ['Sample'] + [f'Confidence Score Cluster {i+1}' for i in range(7)] + ['Predicted Cluster']

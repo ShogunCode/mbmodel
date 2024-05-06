@@ -1,11 +1,16 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import request, current_app
+import logging
 
+# Function to check if the file is allowed
 def allowed_file(filename, allowed_extensions):
+    logging.info("Checking if file is allowed")
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
+# Function to save the uploaded file
 def save_uploaded_file():
+    logging.info("Saving uploaded file")
     if 'file' not in request.files:
         return None, 'No file part', 400
 
@@ -29,7 +34,9 @@ def save_uploaded_file():
         current_app.logger.error(f'Failed to save file: {str(e)}')
         return None, str(e), 500
 
+# Function to read data from a file
 def read_data(filepath):
+    logging.info(f"Reading data from file: {filepath}")
     with open(filepath, 'r') as file:
         return file.read()
 

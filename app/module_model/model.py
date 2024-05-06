@@ -3,13 +3,15 @@ from joblib import load
 import logging
 from flask import Blueprint
 import numpy as np
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.svm import SVC
 
 bp = Blueprint('model', __name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Model more suited for logging due to backend operation & sys admin
+# Function to make predictions using the SVM model
 def make_predictions(H, model_path):
     logging.info("Current working directory: " + os.getcwd())
     full_path = os.path.join(os.getcwd(), model_path)
@@ -63,3 +65,47 @@ def make_predictions(H, model_path):
     logging.info("Predictions completed successfully.")
 
     return predictions, confidence_scores, H
+
+# Test & Train Logic for Model
+# Parameter grid for GridSearch
+def test_train_svm(H, cluster_labels):
+    
+    # Assuming X is your feature matrix and y is your labels vector
+    X_train_svm, X_test_svm, y_train_svm, y_test_svm = train_test_split(H, cluster_labels, test_size=0.2, random_state=42)
+
+    # Configure the SVM model
+    svm_model = SVC(kernel='linear')  # Starting point, linear kernel
+
+    # Fit the model
+    svm_model.fit(X_train_svm, y_train_svm)
+
+    # Predict on the test set
+    predictions_svm = svm_model.predict(X_test_svm)
+    
+    param_grid = {
+        'C': [0.1, 1, 10, 100],  # C values
+        'gamma': [1, 0.1, 0.01, 0.001],  # gamma values
+        'kernel': ['rbf', 'poly', 'sigmoid']  # kernels
+    }
+
+# Grid Search for SVM
+def grid_search_svm(X_train_svm, y_train_svm, X_test_svm):
+    
+    # Parameter grid for GridSearch
+    param_grid = {
+    'C': [0.1, 1, 10, 100],  # C values
+    'gamma': [1, 0.1, 0.01, 0.001],  # gamma values
+    'kernel': ['rbf', 'poly', 'sigmoid']  # kernels
+}
+    
+    # Create a GridSearchCV object
+    grid_search = GridSearchCV(SVC(), param_grid, refit=True, verbose=2, cv=10)
+
+    # Fit it to the data
+    grid_search.fit(X_train_svm, y_train_svm)
+
+    # Print out the best parameters
+    print("Best parameters found: ", grid_search.best_params_)
+
+    # Predict using the best model
+    predictions = grid_search.predict(X_test_svm)
