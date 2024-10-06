@@ -1,3 +1,4 @@
+// Validate the form to ensure that all radio buttons are selected
 function validateForm() {
     let allGroupsValid = true;
     document.querySelectorAll('div.mb-4').forEach(group => {

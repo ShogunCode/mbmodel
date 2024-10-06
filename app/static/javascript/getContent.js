@@ -1,7 +1,7 @@
-fetch('static/html/about.html')
+fetch('static/html/help.html')
   .then(response => response.text())
   .then(html => {
-    document.getElementById('styled-about').innerHTML = html;
+    document.getElementById('styled-help').innerHTML = html;
     // initializeTabs();
   })
   .catch(error => console.error('Error loading the text file:', error));

@@ -1,0 +1,11 @@
+Sample,Predicted Cluster,Highest Probability Score
+Sample_1,SHH_Inf,0.998
+Sample_2,WNT,0.994
+Sample_3,WNT,1.0
+Sample_4,SHH_Old,0.996
+Sample_5,Grp3_LowRisk,0.997
+Sample_6,Grp3_LowRisk,0.996
+Sample_7,Grp4_LowRisk,0.997
+Sample_8,SHH_Inf,0.996
+Sample_9,Grp3_HighRisk,0.998
+Sample_10,SHH_Inf,0.997

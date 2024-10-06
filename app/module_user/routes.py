@@ -1,17 +1,17 @@
-from flask import render_template, jsonify, request, Response, send_from_directory
-import json
+from flask import render_template, jsonify, request
 from app.module_user.file_utils import save_uploaded_file
 from app.module_user import bp
 from app.module_user.tasks import process_file_async, test_task
-import time
 import pandas as pd
 import os
 from app.config import Config
 
+# Flask route to render the index.html template
 @bp.route('/')
 def index():
     return render_template('index.html')
 
+# Flask route to upload a file
 @bp.route('/upload', methods=['POST'])
 def upload_file():
     file_path, error_message, status_code = save_uploaded_file()
@@ -20,6 +20,7 @@ def upload_file():
     else:
         return jsonify({'error': error_message}), status_code
 
+# Flask route to process an uploaded file
 @bp.route('/process', methods=['POST'])
 def process_uploaded_file():
     file_path = request.json.get('file_path')
@@ -50,6 +51,7 @@ def get_status(task_id):
     # Return the task status as a JSON response
     return jsonify(response)
 
+# Flask route to download a file
 @bp.route('/cluster-data/<task_id>', methods=['GET'])
 def cluster_data(task_id):
     task = process_file_async.AsyncResult(task_id)
@@ -62,6 +64,7 @@ def cluster_data(task_id):
     else:
         return jsonify({'message': 'Data not ready'}), 202
 
+# Flask route to download a file
 @bp.route('/get-results/<csv_filename>')
 def get_results(csv_filename):
     # Ensure the filename does not contain unsafe path elements
@@ -90,25 +93,7 @@ def get_results(csv_filename):
         # Handle unexpected errors
         return jsonify({'error': str(e)}), 500
 
-# @bp.route('/get-results/<path:csv_filename>')
-# def get_results(csv_filename):
-#     # Use Flask's open_resource method to access files in the root directory
-#     try:
-#         csv_path = os.path.join(bp.root_path, csv_filename)
-#         print(f"Looking for file at: {csv_path}")  # Diagnostic print
-        
-#         # Check if file exists
-#         if not os.path.isfile(csv_path):
-#             print("File not found.")  # Diagnostic print
-#             return "File not found", 404  # Provide a 404 response
-        
-#         # File exists, proceed to read and return data
-#         processed_data = pd.read_csv(csv_path)
-#         return processed_data.to_json(orient='records')
-#     except Exception as e:
-#         print(f"An error occurred: {e}")  # Diagnostic print
-#         return str(e), 500  # Return a 500 Internal Server Error with the exception
-
+# Flask route to download a file
 @bp.route('/trigger_test_task')
 def trigger_test_task():
     # This line sends the task to Celery and executes it asynchronously

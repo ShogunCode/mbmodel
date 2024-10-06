@@ -11,25 +11,32 @@ import redis
 import re
 import csv
 from app.config import Config 
+from joblib import load
 
 # Set up basic configuration for logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Read a data file from the given file path and return a pandas DataFrame
 def read_data_file(file_path):
-    # Reads a data file from the given file path and returns a pandas DataFrame.
     try:
         # Split the directory and the filename
         directory = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
+
+        # Check if the file's extension is allowed
+        if not filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS:
+            logging.error(f"Unsupported file extension for file: {filename}")
+            return None
+
         # Determine the delimiter based on the file extension
         delimiter = '\t' if filename.endswith('.txt') else ','
-        # Read the file into a DataFrame
-        df = pd.read_csv(file_path, sep=delimiter)
+
         # Check if the file exists
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"The file {file_path} does not exist.")
-        
+
+        # Read the file into a DataFrame
+        df = pd.read_csv(file_path, sep=delimiter)
         return df
 
     except FileNotFoundError as e:
@@ -57,7 +64,7 @@ def preprocess_data(df):
 
     return df
 
-# Dimenionality Reduction of the data using NMF
+# Dimensionality Reduction of the data using NMF
 def transform_with_nmf(df, n_components):
     logging.info("Starting NMF transformation")
     if df is not None:
@@ -65,9 +72,14 @@ def transform_with_nmf(df, n_components):
         if df.shape[1] == 0:  # Check if there are no columns
             print("No data available for NMF.")
             return None, None
-        model = NMF(n_components=n_components)
-        W = model.fit_transform(df)
+        
+        # Load the pre-trained NMF model from the specified path
+        model = load(Config.NMF_MODEL_PATH)
+        
+        # Perform transformation using the pre-loaded model
+        W = model.fit_transform(df) 
         H = model.components_
+        
         # Debugging output for successful NMF transformation
         print("NMF transformation successful. Components shape:", H.shape)
         return W, H
@@ -81,39 +93,6 @@ def apply_kmeans(H, n_clusters=7):
     kmeans = KMeans(n_clusters=n_clusters)
     kmeans.fit(H)
     return kmeans.labels_, kmeans
-
-# Make predictions using the provided model
-def process_file(file_path):
-    logging.debug(f"Starting to process file: {file_path}")
-    with current_app.app_context():
-        logging.debug(f"Starting to process file: {file_path}")
-        try:
-            raw_data = read_data_file(file_path)
-            df = preprocess_data(raw_data)
-            if df is None or df.shape[1] <= 0:
-                logging.warning("DataFrame is empty after preprocessing")
-                return None
-            
-            logging.info("Applying NMF transformation")
-            W, H = transform_with_nmf(df, current_app.config['N_METAGENES'])
-            
-            H = H.T
-            
-            logging.info("Applying K-means clustering")
-            cluster_labels, kmeans = apply_kmeans(H, current_app.config['N_CLUSTERS'])
-            
-            logging.info("Making predictions")
-            predictions = make_predictions(H, cluster_labels, current_app.config['ML_MODEL_PATH'])
-            
-            return {
-                'W': W.tolist(), 
-                'H': H.tolist(), 
-                'labels': cluster_labels.tolist(),
-                'predictions': [np.array(pred).tolist() for pred in predictions]
-            }
-        except Exception as e:
-            logging.error(f"Failed during processing: {str(e)}")
-            return None
 
 # Format the results into a structured dictionary or object    
 def format_result(W, H, labels, predictions):
@@ -173,35 +152,6 @@ def generate_json_response(confidences):
     # Convert the list to a JSON-formatted string
     return json.dumps(response)
 
-# Working version of generate_json_response  
-# def generate_json_response(predictions, confidences, threshold):
-#     results = []
-#     try:
-#         for idx, (pred, conf) in enumerate(zip(predictions, confidences)):
-#             # If confidences are multidimensional, choose a specific score.
-#             # Example: Using the maximum score from each set of confidence scores
-#             if isinstance(conf, np.ndarray):
-#                 conf = conf.max()  # or np.mean(conf), or any other appropriate measure
-
-#             # Ensure the data types are serializable
-#             result = {
-#                 "sample": int(idx + 1),
-#                 "cluster": int(pred),
-#                 "confidence": float(f"{conf:.2f}")  # Format and convert to float
-#             }
-#             results.append(result)
-        
-#         # Append the threshold to the response
-#         response = {
-#             "results": results,
-#             "threshold": threshold
-#         }
-#         json_response = json.dumps(response)
-#     except Exception as e:
-#         logging.error(f"Failed to generate JSON response: {repr(e)}")
-#         raise RuntimeError("Failed to generate valid JSON response") from e
-#     return json_response    
-    
 r = redis.Redis(host='localhost', port=6379, db=0)
 # Store the JSON response in Redis with a time-to-live (TTL) of 1 hour
 def store_in_redis(task_id, json_response):

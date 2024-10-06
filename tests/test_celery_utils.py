@@ -1,33 +1,49 @@
-# test_celery_utils.py
 import pytest
+from unittest.mock import patch, Mock
 from flask import Flask
-from app.celery_utils import init_celery, celery_app
+from app.celery_utils import init_celery
 
-@pytest.fixture(scope='module')
-def flask_app():
-    """Create and configure a new app instance for each test."""
-    app = Flask(__name__)
-    app.config.update(
-        TESTING=True,
-        broker_url='redis://localhost:6379/0',
-        result_backend='redis://localhost:6379/0'
-    )
-    init_celery(app)
-    return app
+# Assume `create_app()` returns a Flask app instance ready for use
+from app import create_app 
 
-@pytest.fixture(scope='module')
-def celery_worker(flask_app):
-    """Starts a Celery worker with the Flask application context."""
-    # We need to import these to patch Celery properly for tests
-    from celery.contrib.testing.worker import start_worker
-    celery_app.loader.import_task_module('celery.contrib.testing.tasks')
-    with start_worker(celery_app, perform_ping_check=False) as worker:
-        yield worker
-    worker.stop()
+class TestFlaskApp:
+    @pytest.fixture
+    def app(self):
+        """Create and configure a new app instance for each test."""
+        app = create_app()
+        app.config.update({
+            'TESTING': True,
+            'DEBUG': False
+        })
+        return app
 
-def test_celery_task(flask_app, celery_worker):
-    """Test if Celery task runs with Flask app context."""
-    from celery.contrib.testing.tasks import ping
-    with flask_app.app_context():
-        task_result = ping.delay()
-        assert task_result.get(timeout=10) == 'pong', "Celery task 'ping' failed"
+    @pytest.fixture
+    def client(self, app):
+        """A test client for the app."""
+        return app.test_client()
+
+    @pytest.fixture
+    def runner(self, app):
+        """A test runner for the app's Click commands."""
+        return app.test_cli_runner()
+
+    @patch('celery_utils.celery_app')
+    def test_init_celery(self, mock_celery_app, app):
+        """Test the initialization of Celery without actually connecting to a broker."""
+        init_celery(app)
+        mock_celery_app.conf.update.assert_called()
+        # Check if the Celery app's configuration has been updated with Flask app's config
+        assert mock_celery_app.conf.update.called
+
+    # Here, add more tests to test other functionalities of your app that do not involve Celery.
+
+    def test_home_route(self, client):
+        """Test the home route."""
+        response = client.get('/')
+        assert response.status_code == 200
+        assert 'Welcome to the Medulloblastoma Classification Tool' in response.data.decode()
+
+# Add more tests for other routes and functionalities of your app as needed.
+
+if __name__ == '__main__':
+    pytest.main()

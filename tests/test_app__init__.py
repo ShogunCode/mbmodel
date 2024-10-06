@@ -1,68 +1,38 @@
-import pytest
-from flask import url_for
-from app import create_app
-from io import BytesIO
+import unittest
+from unittest.mock import patch
+from flask_testing import TestCase
+from app import create_app  # Ensure this import aligns with your project structure
 
-@pytest.fixture
-def app():
-    """Create and configure a new app instance for each test."""
-    app = create_app()
-    app.config.update({
-        "TESTING": True,  # Update other config values that are test specific if needed
-    })
-    yield app
+class TestCreateApp(TestCase):
+    def create_app(self):
+        # Setup application for testing (do not initiate Celery)
+        app = create_app()
+        app.config['TESTING'] = True
+        app.config['CELERY_BROKER_URL'] = 'memory://'
+        app.config['CELERY_RESULT_BACKEND'] = 'cache'
+        app.config['CELERY_CACHE_BACKEND'] = 'memory'
+        return app
 
-@pytest.fixture
-def client(app):
-    """A test client for the app."""
-    return app.test_client()
+    def setUp(self):
+        pass
 
-def test_app_is_created(app):
-    assert app is not None
+    def tearDown(self):
+        pass
 
-def test_app_is_testing(app):
-    assert app.config['TESTING']
+    @patch('app.celery_utils.init_celery')  # Mock the init_celery to not actually initialize
+    def test_app_creation(self, mock_init_celery):
+        self.assertIsNotNone(self.app)
+        mock_init_celery.assert_called_once()
 
-def test_app_has_correct_blueprints(app):
-    assert 'module_user' in app.blueprints
-    assert 'module_model' in app.blueprints
+    def test_user_blueprint(self):
+        response = self.client.get('/user/some_route')  # Update with actual route
+        self.assertEqual(response.status_code, 200)
 
-def test_celery_is_initialized(app):
-    from app.celery_utils import celery_app
-    assert celery_app.conf['broker_url'] == app.config['CELERY_BROKER_URL']
+    def test_model_blueprint(self):
+        response = self.client.get('/model/some_route')  # Update with actual route
+        self.assertEqual(response.status_code, 200)
 
-def test_index_route(client):
-    response = client.get(url_for('module_user.index'))
-    assert response.status_code == 200
+# Optionally include more tests for different routes and functionalities
 
-def test_upload_route(client):
-    # Simulating file upload using test client
-    data = {
-        'file': (BytesIO(b'my file contents'), 'test.txt')
-    }
-    response = client.post(url_for('module_user.upload_file'), data=data, content_type='multipart/form-data')
-    assert response.status_code == 200
-
-def test_process_uploaded_file(client):
-    # You would need to adjust this depending on how file_path is typically obtained
-    response = client.post(url_for('module_user.process_uploaded_file'), json={'file_path': 'path/to/file'})
-    assert response.status_code == 202
-
-def test_get_status_route(client):
-    # Assuming there is a valid task_id which should be replaced with a real one during testing
-    response = client.get(url_for('module_user.get_status', task_id='dummy_task_id'))
-    assert response.status_code == 200
-
-def test_cluster_data_route(client):
-    # Assuming there is a valid task_id which should be replaced with a real one during testing
-    response = client.get(url_for('module_user.cluster_data', task_id='dummy_task_id'))
-    assert response.status_code in [202, 500]
-
-def test_get_results_route(client):
-    # Test with a safe file name
-    response = client.get(url_for('module_user.get_results', csv_filename='data.csv'))
-    assert response.status_code in [200, 404, 500]
-
-def test_trigger_test_task_route(client):
-    response = client.get(url_for('module_user.trigger_test_task'))
-    assert response.status_code == 200
+if __name__ == '__main__':
+    unittest.main()

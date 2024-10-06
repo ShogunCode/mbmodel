@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Function to plot the distribution of confidence scores per cluster
 def cluster_count(predictions):
     logging.info("Calculating cluster counts")
-    # Use numpy's unique function to find unique elements and their counts
+    # numpy's unique function to find unique elements and their counts
     clusters, counts = np.unique(predictions, return_counts=True)
     # Convert numpy types to Python native types for JSON serialization
     cluster_counts = {str(cluster): int(count) for cluster, count in zip(clusters, counts)}

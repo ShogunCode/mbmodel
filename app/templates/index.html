@@ -58,7 +58,7 @@
           <button type="button" id="processButton" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-2">Process Data</button>
           <br />
           <p class="text-sm text-gray-500">
-            This is a research application for the classification of Medulloblastoma tumours into one of 7 sub-groups.<br /><br />Please read the guide before using the application. Note: Only .txt or .csv files are permitted.
+            This is a research application for the classification of Medulloblastoma tumours into one of seven sub-groups.<br /><br />Please read the guide before using the application. Note: Only .txt or .csv files are permitted.
           </p>
         </form>
       </div>
@@ -87,7 +87,9 @@
           </div>
           <div id="default-styled-tab-content">
             <div class="hidden p-4 rounded-lg" id="styled-profile" role="tabpanel" aria-labelledby="profile-tab">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Results</h2>
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Classification Confidence Box Plot</h2>
+              <br />
+              <p>This confidence range box plot provides a visual summary of the distribution of confidence scores across different predicted clusters. Presenting this plot allows users to quickly assess the variability and central tendency of confidence scores within each cluster. It highlights which clusters are consistently predicted with high confidence and which might contain more uncertainty.</p>
               <div class="space-y-4">
                 <img id="plotImage" src="" alt="Generated Plot" style="max-width: 100%;" />
                 <p class="text-sm text-gray-500 dark:text-gray-400"></p>
@@ -121,17 +123,42 @@
               <div id="downloadButtonContainer" class="mt-4 text-center">
                 <!-- Download button -->
               </div>
-              <!-- Table Tab --> 
+              <!-- Table Tab -->
             </div>
-            <div class="p-4 rounded-lg shadow-lg bg-white flex flex-col items-center justify-center" id="styled-classdib" role="tabpanel" aria-labelledby="classdib-tab">
-              <div class="w-full lg:w-3/4">
-                <canvas id="pieChart"></canvas>
+            <div class="p-4 rounded-lg shadow-lg bg-white" id="styled-classdib" role="tabpanel" aria-labelledby="classdib-tab">
+              <div class="flex flex-col lg:flex-row items-center justify-center">
+              
+                <div class="w-full lg:flex lg:items-center lg:justify-between">
+                  <div class="lg:flex-grow">
+                    <canvas id="pieChart" class="w-full" style="aspect-ratio: 1;"></canvas>
+                  </div>
+                  <div class="lg:w-1/3 px-4">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-2">Classification Pie Chart</h2>
+                    <!-- Text description moved next to the chart on larger screens -->
+                    <p>This classification pie chart visually represents the proportion of total samples belonging to each cluster. It enables users to immediately grasp the distribution of classifications within the dataset. By presenting this pie chart, you are providing a straightforward and effective means for users to identify which clusters are most prevalent and which are less common.</p>
+                  </div>
+                </div>
+                <div class="w-full lg:w-1/3 text-center mt-4 lg:mt-0 lg:pl-4">
+                  <!-- Example of additional stats or elements -->
+                  <div id="chartStats" class="w-full text-center mt-2"></div>
+                </div>
               </div>
-              <div id="chartStats" class="mt-4 w-full text-center"></div>
-              <div id="newChartStats" class="mt-2 w-full text-center text-lg font-bold"></div>
             </div>
             <div class="hidden p-4" id="styled-about" role="tabpanel" aria-labelledby="about-tab">
-              <!-- About Tab -->
+              <h3 style="font-weight: bold">About</h3>
+              <h1>This application is a research tool for the classification of Medulloblastoma tumours into one of seven sub-groups.</h1><br />
+              <h1>The application was inspired by the following study: Novel molecular subgroups for clinical classification and outcome prediction in childhood medulloblastoma: a cohort study</h1>
+              <br />
+              <a href="https://pubmed.ncbi.nlm.nih.gov/28545823/" target="_blank" style="font-weight: bold; text-decoration: underline;">Link to the study here!</a>
+              <br />
+              <br />
+              <h3>Developer: Conall Murphy</h3>
+              <h3>Development Supervisor: Dr. Reza Rafiee</h3>
+              <br />
+              <h1>This application was developed as part of a final year project for the completion of a MSc in Software Development</h1>
+              <br />
+              <h1>Queen's University Belfast</h1>
+              <h1>The School of Electronics, Electrical Engineering and Computer Science</h1>
             </div>
             <div class="hidden p-4" id="styled-help" role="tabpanel" aria-labelledby="help-tab">
               <!-- About Tab -->

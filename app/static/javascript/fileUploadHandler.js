@@ -5,11 +5,12 @@ document.getElementById('uploadButton').addEventListener('click', function (even
     var xhr = new XMLHttpRequest();
     var statusText = document.getElementById('statusText');
     var uploadButton = document.getElementById('uploadButton');
-    var processButton = document.getElementById('processButton'); // Move this line here for better structure
+    var processButton = document.getElementById('processButton'); 
 
     // Disable the upload button to prevent multiple submissions
     uploadButton.disabled = true;
 
+    // Set the status text to 'Uploading...'
     xhr.open('POST', '/upload', true);
     xhr.onload = function () {
         console.log("Response received: ", xhr);
@@ -31,7 +32,7 @@ document.getElementById('uploadButton').addEventListener('click', function (even
                     processButton.classList.add('hidden'); // Optionally re-hide the button
                     statusText.textContent = 'Processing...'; // Update status text
 
-                    // You may want to disable the button here to prevent multiple processing requests
+                    // disable the button here to prevent multiple processing requests
                     processButton.disabled = true;
 
                     // Call the function that handles the actual processing
@@ -53,6 +54,7 @@ document.getElementById('uploadButton').addEventListener('click', function (even
     xhr.send(formData);
 });
 
+// Function to process the uploaded file
 function processFile(file_path) {
     console.log("Processing file at path: ", file_path);
     var statusText = document.getElementById('statusText');
@@ -81,6 +83,7 @@ function processFile(file_path) {
     processXhr.send(JSON.stringify({ file_path: file_path }));
 }
 
+// Function to update the table with the given CSV filename
 function updateTable(csvFilename) {
     // Extract the filename if a path is given
     var filename = csvFilename.split('/').pop();  // This will get only the filename, stripping any path
@@ -97,10 +100,10 @@ function updateTable(csvFilename) {
     xhr.onload = function () {
         if (xhr.status === 200) {
             try {
-                var data = JSON.parse(xhr.responseText); // Safely parse the response
+                var data = JSON.parse(xhr.responseText); // safely parse the response
                 if (window.table) {
                     window.table.clear();
-                    window.table.rows.add(data); // Assuming 'data' is in the correct format for DataTables
+                    window.table.rows.add(data); // assuming 'data' is in the correct format for DataTables
                     window.table.draw();
                 } else {
                     console.error("DataTable is not initialized yet.");
@@ -120,6 +123,7 @@ function updateTable(csvFilename) {
     xhr.send();
 }
 
+// Function to update the pie chart with the given data
 function updatePieChart(data) {
     console.log("Received pie chart data:", data);
     const ctx = document.getElementById('pieChart').getContext('2d');
@@ -194,24 +198,35 @@ function generateColors(count) {
     return colors;
 }
 
+// Function to update the chart stats
+function updateStatusAndImage(response) {
+    var plotImage = document.getElementById('plotImage');
+    if (response.result.image_url) {
+        plotImage.src = response.result.image_url; // Update the image source
+        plotImage.classList.remove('hidden'); // Attempt to remove the 'hidden' class
+        plotImage.style.display = 'block !important'; // Directly set display style to 'block'
+    } else {
+        console.error("Expected image URL not found in response.");
+    }
+}
+
+// Function to update the chart stats
 function updateChartStats(data) {
     const statsDiv = document.getElementById('chartStats');
     const totalSamples = Object.values(data).reduce((acc, curr) => acc + curr, 0); // Summing all the values
     statsDiv.textContent = `Total Samples: ${totalSamples}`; // Displaying total number of samples
 }
 
-function updateNewChartStats(data) {
-    const newStatsDiv = document.getElementById('newChartStats');
-    const totalSamples = Object.values(data).reduce((acc, curr) => acc + curr, 0); // Calculate the total samples
-    newStatsDiv.textContent = `Total Samples: ${totalSamples}`; // Update text content of the new stats div
-}
-
+// Function to poll for task completion
 function pollForTaskCompletion(taskId) {
     const statusText = document.getElementById('statusText');
     const downloadContainer = document.getElementById('downloadButtonContainer');
     let downloadButton = null;
 
     const handleSuccess = (response) => {
+        // Update status and image visibility
+        updateStatusAndImage(response);
+        // Remove the laoding bar
         removeLoadingBar();
         if (response.result) {
             // Check if processed file data is available and update the table
@@ -227,7 +242,7 @@ function pollForTaskCompletion(taskId) {
             if (response.result.cluster_count) {
                 updatePieChart(response.result.cluster_count); // Update the pie chart
                 updateChartStats(response.result.cluster_count); // Update the chart stats
-                updateNewChartStats(response.result.cluster_count); // Update the new chart stats
+
             } else {
                 console.error("Pie chart data not found in response.");
             }
@@ -278,6 +293,7 @@ function pollForTaskCompletion(taskId) {
     checkStatus(); // Start the polling process
 }
 
+// Function to update the download button
 function processStatusXhrLoad(xhr, onSuccess, onFailure, onContinue) {
     if (xhr.status === 200) {
         const response = JSON.parse(xhr.responseText);
@@ -295,6 +311,7 @@ function processStatusXhrLoad(xhr, onSuccess, onFailure, onContinue) {
     }
 }
 
+// Function to remove the loading bar
 function removeLoadingBar() {
     const loadingBar = document.querySelector('.loading-bar');
     if (loadingBar) {
@@ -304,21 +321,27 @@ function removeLoadingBar() {
 
 let downloadButton = null; // Moved to a higher scope outside of the function
 
+// Function to update the download button
 function updateDownloadButton(response, downloadContainer) {
     if (response.result && response.result.processed_file) {
         if (!downloadButton) {
             downloadButton = document.createElement('a');
             downloadButton.textContent = 'Download Results';
-            downloadButton.className = 'download-button';
+            downloadButton.className = 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mb-4';
             downloadContainer.appendChild(downloadButton);
         }
-        downloadButton.href = response.result.processed_file;
+        // Extract just the filename from the full path
+        const filePath = response.result.processed_file;
+        const fileName = filePath.split('/').pop(); // This assumes the path uses forward slashes
+
+        downloadButton.href = 'http://127.0.0.1:5000/static/results/' + fileName;
     } else {
         console.error("Expected processed CSV filename not found in response: ", response.result);
         document.getElementById('statusText').textContent = 'Data processed but no results file to display.';
     }
 }
 
+// Function to update the pie chart
 function updatePieChartWithResponse(response) {
     // Check if 'cluster_count' data is available in the response
     if (response.result && response.result.cluster_count) {
@@ -341,6 +364,7 @@ function updateStatusAndImage(response) {
     }
 }
 
+// Utility to update the chart stats
 function handleNetworkError() {
     console.error("Network error while checking task status.");
     document.getElementById('statusText').textContent = 'Network error while checking task status.';

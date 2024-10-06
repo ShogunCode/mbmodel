@@ -2,6 +2,7 @@ import os
 from werkzeug.utils import secure_filename
 from flask import request, current_app
 import logging
+from app.config import Config
 
 # Function to check if the file is allowed
 def allowed_file(filename, allowed_extensions):
@@ -21,6 +22,11 @@ def save_uploaded_file():
     filename = secure_filename(file.filename)
     if filename == '':
         return None, 'Invalid file name', 400
+
+    # Check if the file's extension is allowed
+    if not filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS:
+        current_app.logger.error(f"Unsupported file extension for file: {filename}")
+        return None, 'Unsupported file extension', 400
 
     upload_folder = current_app.config['UPLOAD_FOLDER']
     file_path = os.path.join(upload_folder, filename)
