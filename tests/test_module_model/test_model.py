@@ -18,7 +18,7 @@ def test_make_predictions_success():
         
         predictions, confidence_scores, input_data = make_predictions(H, model_path)
 
-        assert mock_exists.called_with(os.path.join(os.getcwd(), model_path))
+        mock_exists.assert_called_with(os.path.join(os.getcwd(), model_path))
         assert predictions is not None
         assert confidence_scores is not None
         assert np.array_equal(input_data, H)
