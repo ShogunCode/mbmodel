@@ -60,7 +60,7 @@ def make_predictions(H, model_path):
         confidence_scores = np.around(confidence_scores, decimals=3)
     else:
         # If no confidence information is available, return None
-        confidence_scores = Noneconfidence_scores = None
+        confidence_scores = None
 
     logging.info("Predictions completed successfully.")
 
